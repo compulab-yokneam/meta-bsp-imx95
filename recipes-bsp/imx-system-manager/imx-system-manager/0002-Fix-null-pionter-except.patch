@@ -1,0 +1,23 @@
+From 36b748281563813b161438f804f73836ac27e127 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 16 Sep 2024 23:53:18 +0300
+Subject: [PATCH] Fix null pionter except
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ drivers/lpi2c/fsl_lpi2c.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/lpi2c/fsl_lpi2c.c b/drivers/lpi2c/fsl_lpi2c.c
+index f9ffa3c..221ef86 100755
+--- a/drivers/lpi2c/fsl_lpi2c.c
++++ b/drivers/lpi2c/fsl_lpi2c.c
+@@ -977,6 +977,8 @@ status_t LPI2C_MasterTransferBlocking(LPI2C_Type *base, lpi2c_master_transfer_t
+     uint16_t commandBuffer[7];
+     uint32_t cmdCount = 0U;
+ 
++    if (base == 0x0)
++        return kStatus_InvalidArgument;
+     /* Check transfer data size in read operation. */
+     if ((transfer->direction == kLPI2C_Read) &&
+         (transfer->dataSize > ((size_t)256 * (size_t)FSL_FEATURE_LPI2C_FIFO_SIZEn(base))))
