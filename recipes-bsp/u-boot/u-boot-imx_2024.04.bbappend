@@ -18,4 +18,5 @@ SRC_URI += "file://0001-remove-lcdif.patch \
             file://0016-ucm-imx93-2024.04-patch.patch \
             file://0001-compulab-Add-ucm-imx95-board-files.patch \
             file://0002-compulab-Enable-ucm-imx95-board-config.patch \
-"
+            file://0003-compulab-Update-ucm-imx95-board-files.patch \
+            "
