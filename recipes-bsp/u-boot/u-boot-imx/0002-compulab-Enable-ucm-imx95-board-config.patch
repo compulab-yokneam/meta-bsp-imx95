@@ -1,0 +1,33 @@
+From 5319ad367fd3e6b8057b98375b747d21801ed4be Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 16 Sep 2024 08:00:22 +0300
+Subject: [PATCH] compulab: Enable ucm-imx95 board config
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/mach-imx/imx9/Kconfig | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm/mach-imx/imx9/Kconfig b/arch/arm/mach-imx/imx9/Kconfig
+index af5ef2b4289..6ef465f908b 100644
+--- a/arch/arm/mach-imx/imx9/Kconfig
++++ b/arch/arm/mach-imx/imx9/Kconfig
+@@ -88,6 +88,10 @@ config TARGET_IMX95_15X15_EVK
+ 	bool "imx95_15x15_evk"
+ 	select IMX95
+ 
++config TARGET_UCM_IMX95
++	bool "ucm_imx95"
++	select IMX95
++
+ endchoice
+ 
+ source "board/freescale/imx91_evk/Kconfig"
+@@ -100,6 +104,7 @@ source "board/freescale/imx95_evk/Kconfig"
+ source "board/toradex/verdin-imx95/Kconfig"
+ source "board/compulab/ucm-imx93/Kconfig"
+ source "board/compulab/mcm-imx93/Kconfig"
++source "board/compulab/ucm-imx95/Kconfig"
+ 
+ endif
+ 
