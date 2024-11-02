@@ -1,0 +1,22 @@
+From a6a5a1680095271ebc5aa87dc4340982492623e5 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 1 Nov 2024 18:02:26 +0200
+Subject: [PATCH] ucm-imx95: env: Add autoload=off
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ include/configs/ucm-imx95.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/ucm-imx95.h b/include/configs/ucm-imx95.h
+index 47233d933b3..4f9e6483bbe 100644
+--- a/include/configs/ucm-imx95.h
++++ b/include/configs/ucm-imx95.h
+@@ -87,6 +87,7 @@
+ 	XEN_BOOT_ENV \
+ 	BOOTENV \
+ 	AHAB_ENV \
++	"autoload=off\0" \
+ 	"prepare_mcore=setenv mcore_args pd_ignore_unused;\0" \
+ 	"cpuidle=cpuidle.off=1\0" \
+ 	"scriptaddr=0x93500000\0" \

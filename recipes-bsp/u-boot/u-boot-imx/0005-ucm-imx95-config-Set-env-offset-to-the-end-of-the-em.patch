@@ -1,0 +1,25 @@
+From cf300d4f452bacddccc2c42d53c7026e52727464 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 1 Nov 2024 18:03:57 +0200
+Subject: [PATCH] ucm-imx95: config: Set env offset to the end of the emmc
+ part#1
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ configs/ucm-imx95_defconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/configs/ucm-imx95_defconfig b/configs/ucm-imx95_defconfig
+index 7ac53fe5107..f3911fe042f 100644
+--- a/configs/ucm-imx95_defconfig
++++ b/configs/ucm-imx95_defconfig
+@@ -7,8 +7,7 @@ CONFIG_SPL_LIBCOMMON_SUPPORT=y
+ CONFIG_SPL_LIBGENERIC_SUPPORT=y
+ CONFIG_NR_DRAM_BANKS=3
+ CONFIG_ENV_SIZE=0x4000
+-CONFIG_ENV_OFFSET=0x700000
+-CONFIG_ENV_SECT_SIZE=0x10000
++CONFIG_ENV_OFFSET=0x3F0000
+ CONFIG_DM_GPIO=y
+ CONFIG_DEFAULT_DEVICE_TREE="ucm-imx95"
+ CONFIG_SPL_TEXT_BASE=0x20480000
