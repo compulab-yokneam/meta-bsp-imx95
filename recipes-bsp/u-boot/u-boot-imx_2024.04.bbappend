@@ -19,5 +19,12 @@ SRC_URI += "file://0001-remove-lcdif.patch \
             file://0001-compulab-Add-ucm-imx95-board-files.patch \
             file://0002-compulab-Enable-ucm-imx95-board-config.patch \
             file://0003-compulab-Update-ucm-imx95-board-files.patch \
-            file://0006-ucm-imx95-board-Set-correct-phy-reset-gpios.patch file://0007-ucm-imx95-dts-Enable-boath-enetc-ifaces.patch file://0005-ucm-imx95-config-Set-env-offset-to-the-end-of-the-em.patch file://0004-ucm-imx95-env-Add-autoload-off.patch \
+            file://0006-ucm-imx95-board-Set-correct-phy-reset-gpios.patch \
+            file://0007-ucm-imx95-dts-Enable-boath-enetc-ifaces.patch \
+            file://0005-ucm-imx95-config-Set-env-offset-to-the-end-of-the-em.patch \
+            file://0004-ucm-imx95-env-Add-autoload-off.patch \
+            file://0010-ucm-imx95-config-Add-lvds-support.patch \
+            file://0008-ucm-imx95-dts-Add-lvds-file.patch \
+            file://0009-ucm-imx95-dts-Update-main-file.patch \
+            file://0011-Update-ucm-imx95-lvds-panel.dtsi.patch \
             "

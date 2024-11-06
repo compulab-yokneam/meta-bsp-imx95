@@ -1,0 +1,98 @@
+From f071b48fcca132a5dac002902b31f11ad8ad9ada Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 4 Nov 2024 10:00:07 +0200
+Subject: [PATCH] ucm-imx95: dts: Update main file
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/dts/ucm-imx95.dts | 51 ++++++++++++++++++++++++++++++++------
+ 1 file changed, 43 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/dts/ucm-imx95.dts b/arch/arm/dts/ucm-imx95.dts
+index 6d7b8cf0726..aef1a7e5d76 100644
+--- a/arch/arm/dts/ucm-imx95.dts
++++ b/arch/arm/dts/ucm-imx95.dts
+@@ -42,7 +42,16 @@
+ 		off-on-delay-us = <12000>;
+ 		enable-active-high;
+ 	};
++};
+ 
++&lpi2c1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	clock-frequency = <400000>;
++	pinctrl-names = "default", "sleep";
++	pinctrl-0 = <&pinctrl_lpi2c1>;
++	pinctrl-1 = <&pinctrl_lpi2c1>;
++	status = "disabled";
+ };
+ 
+ &lpi2c2 {
+@@ -54,12 +63,22 @@
+ 	pinctrl-1 = <&pinctrl_lpi2c2>;
+ 	status = "okay";
+ 
+-	adp5585gpio: gpio@34 {
+-		compatible = "adp5585";
+-		reg = <0x34>;
+-		gpio-controller;
+-		#gpio-cells = <2>;
+-	};
++        eeprom@50 {
++                compatible = "atmel,24c08";
++                reg = <0x50>;
++                pagesize = <16>;
++        };
++
++	rtc@32 {
++		compatible = "epson,rx8900";
++		reg = <0x32>;
++		trickle-diode-disable;
++		epson,vdet-disable;
++		pagesize = <16>;
++		sqw = "32768_hz";
++		xt-frequency = <32772300>;
++		status = "okay";
++        };
+ };
+ 
+ &lpi2c3 {
+@@ -70,6 +89,20 @@
+ 	pinctrl-0 = <&pinctrl_lpi2c3>;
+ 	pinctrl-1 = <&pinctrl_lpi2c3>;
+ 	status = "okay";
++
++	pca9555: gpio@20 {
++		compatible = "nxp,pca9555";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		status = "okay";
++	};
++
++        eeprom@54 {
++                compatible = "atmel,24c08";
++                reg = <0x54>;
++                pagesize = <16>;
++        };
+ };
+ 
+ &lpi2c4 {
+@@ -238,8 +271,8 @@
+ 
+ 	pinctrl_lpi2c3: lpi2c3grp {
+ 		fsl,pins = <
+-			IMX95_PAD_GPIO_IO00__LPI2C3_SDA			0x40000b9e
+-			IMX95_PAD_GPIO_IO01__LPI2C3_SCL			0x40000b9e
++			IMX95_PAD_GPIO_IO28__LPI2C3_SDA			0x40000b9e
++			IMX95_PAD_GPIO_IO29__LPI2C3_SCL			0x40000b9e
+ 		>;
+ 	};
+ 
+@@ -471,3 +504,5 @@
+ 		>;
+ 	};
+ };
++
++#include "ucm-imx95-lvds-panel.dtsi"

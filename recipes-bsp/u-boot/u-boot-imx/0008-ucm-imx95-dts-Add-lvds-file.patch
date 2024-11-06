@@ -1,0 +1,141 @@
+From 2762a6d62fd36547382d7c30a5dc5cd1fc7bd21d Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 4 Nov 2024 09:59:46 +0200
+Subject: [PATCH] ucm-imx95: dts: Add lvds file
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ arch/arm/dts/ucm-imx95-lvds-panel.dtsi | 124 +++++++++++++++++++++++++
+ 1 file changed, 124 insertions(+)
+ create mode 100644 arch/arm/dts/ucm-imx95-lvds-panel.dtsi
+
+diff --git a/arch/arm/dts/ucm-imx95-lvds-panel.dtsi b/arch/arm/dts/ucm-imx95-lvds-panel.dtsi
+new file mode 100644
+index 00000000000..cec4ef1c33b
+--- /dev/null
++++ b/arch/arm/dts/ucm-imx95-lvds-panel.dtsi
+@@ -0,0 +1,124 @@
++/ {
++	backlight: backlight {
++		compatible = "gpio-backlight";
++		gpios = <&gpio2 13 GPIO_ACTIVE_HIGH>;
++	};
++
++	lvds0_panel {
++		compatible = "simple-panel";
++		backlight = <&backlight>;
++		enable-gpios = <&pca9555 4 GPIO_ACTIVE_HIGH>;
++		display-timings {
++			native-mode = <&timing0>;
++#if 0
++			timing0: timing0 {
++				clock-frequency = <42105000>;
++				hactive = <1024>;
++				vactive = <600>;
++				hfront-porch = <30>;
++				hback-porch = <30>;
++				hsync-len = <30>;
++				vback-porch = <10>;
++				vfront-porch = <10>;
++				vsync-len = <10>;
++
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++#else
++			timing0: timing0 {
++				clock-frequency = <69142857>;
++				hactive = <1024>;
++				vactive = <600>;
++				hfront-porch = <160>;
++				hback-porch = <160>;
++				hsync-len = <1>;
++				vback-porch = <12>;
++				vfront-porch = <23>;
++				vsync-len = <1>;
++
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++#endif
++		};
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				panel_in: endpoint {
++					remote-endpoint = <&lvds0_out>;
++				};
++			};
++		};
++	};
++};
++
++&display_pixel_link {
++	status = "okay";
++};
++
++&dpu {
++	clocks = <&scmi_clk IMX95_CLK_DISP1PIX>,
++				 <&scmi_clk IMX95_CLK_DISPAPB>,
++				 <&scmi_clk IMX95_CLK_DISPAXI>,
++				 <&scmi_clk IMX95_CLK_DISPOCRAM>,
++				 <&scmi_clk IMX95_CLK_LDBPLL>,
++				 <&scmi_clk IMX95_CLK_LDBPLL_VCO>;
++	status = "okay";
++};
++
++&mipi_dsi {
++	status = "disabled";
++};
++
++&ldb {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	assigned-clocks = <&scmi_clk IMX95_CLK_LDBPLL_VCO>,
++			  <&scmi_clk IMX95_CLK_LDBPLL>;
++	assigned-clock-rates = <3291120000>, <1097040000>;
++	status = "okay";
++
++	channel@0 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0>;
++		fsl,data-mapping = "spwg";
++		fsl,data-width = <24>;
++		status = "okay";
++
++		port@1 {
++			reg = <1>;
++
++			lvds0_out: endpoint {
++				remote-endpoint = <&panel_in>;
++			};
++		};
++	};
++};
++
++&ldb0_phy {
++	status = "okay";
++};
++
++&ldb1_phy {
++	status = "okay";
++};
++
++&pixel_interleaver {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++
++	channel@0 {
++		reg = <0>;
++		status = "okay";
++	};
++};
