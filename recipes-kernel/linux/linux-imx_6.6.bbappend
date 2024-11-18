@@ -8,4 +8,6 @@ SRC_URI += " \
 	file://0005-debug-ucm-imx95-dts-Clean-up-the-main-file.patch \
 	file://0006-debug-ucm-imx95-dts-Fix-lvds-panel-support.patch \
 	file://0007-debug-ucm-imx95-dts-Prepare-for-bt-wifi.patch \
+	file://0008-debug-ucm-imx95-dts-Refactoring-lvds-panel-support.patch \
+	file://0009-debug-ucm-imx95-dts-Update-bluetooth-compatible-stri.patch \
 "
