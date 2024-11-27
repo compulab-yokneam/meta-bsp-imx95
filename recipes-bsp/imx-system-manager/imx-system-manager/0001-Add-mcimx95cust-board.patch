@@ -556,7 +556,7 @@ index 0000000..c82467f
 +/*--------------------------------------------------------------------------*/
 +/* System sleep prepare                                                     */
 +/*--------------------------------------------------------------------------*/
-+void BOARD_SystemSleepPrepare(uint32_t sleepMode)
++void BOARD_SystemSleepPrepare(uint32_t sleepMode, uint32_t sleepFlags)
 +{
 +    /* Configure SM LPUART for wakeup */
 +    if (s_uartConfig.base != NULL)
@@ -581,7 +581,7 @@ index 0000000..c82467f
 +/*--------------------------------------------------------------------------*/
 +/* System sleep entry                                                       */
 +/*--------------------------------------------------------------------------*/
-+void BOARD_SystemSleepEnter(uint32_t sleepMode)
++void BOARD_SystemSleepEnter(uint32_t sleepMode, uint32_t sleepFlags)
 +{
 +    /* Disable SysTick */
 +    uint32_t sysTickMask = SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
@@ -606,7 +606,7 @@ index 0000000..c82467f
 +/*--------------------------------------------------------------------------*/
 +/* System sleep exit                                                        */
 +/*--------------------------------------------------------------------------*/
-+void BOARD_SystemSleepExit(uint32_t sleepMode)
++void BOARD_SystemSleepExit(uint32_t sleepMode, uint32_t sleepFlags)
 +{
 +    if (s_wdogConfig.enableWdog32)
 +    {
@@ -623,7 +623,7 @@ index 0000000..c82467f
 +/*--------------------------------------------------------------------------*/
 +/* System sleep unprepare                                                   */
 +/*--------------------------------------------------------------------------*/
-+void BOARD_SystemSleepUnprepare(uint32_t sleepMode)
++void BOARD_SystemSleepUnprepare(uint32_t sleepMode, uint32_t sleepFlags)
 +{
 +    /* Service SM LPUART wakeup events */
 +    if (s_uartConfig.base != NULL)
@@ -754,28 +754,28 @@ index 0000000..2b9de5d
 + *
 + * @param sleepMode Sleep mode being entered.
 + */
-+void BOARD_SystemSleepPrepare(uint32_t sleepMode);
++void BOARD_SystemSleepPrepare(uint32_t sleepMode, uint32_t sleepFlags);
 +
 +/*!
 + * Board-level system sleep entry
 + *
 + * @param sleepMode Sleep mode being entered.
 + */
-+void BOARD_SystemSleepEnter(uint32_t sleepMode);
++void BOARD_SystemSleepEnter(uint32_t sleepMode, uint32_t sleepFlags);
 +
 +/*!
 + * Board-level system sleep exit
 + *
 + * @param sleepMode Sleep mode being exited.
 + */
-+void BOARD_SystemSleepExit(uint32_t sleepMode);
++void BOARD_SystemSleepExit(uint32_t sleepMode, uint32_t sleepFlags);
 +
 +/*!
 + * Board-level unprepare for system sleep entry
 + *
 + * @param sleepMode Sleep mode being entered.
 + */
-+void BOARD_SystemSleepUnprepare(uint32_t sleepMode);
++void BOARD_SystemSleepUnprepare(uint32_t sleepMode, uint32_t sleepFlags);
 +
 +/*!
 + * Set the watchdog mode
@@ -2350,7 +2350,7 @@ index 0000000..795a872
 +                [PF09_MASK_IDX_STATUS1] = 0x08U
 +            };
 +
-+            if (!PF09_IntEnable(&pf09Dev, mask, false))
++            if (!PF09_IntEnable(&pf09Dev, mask, PF09_MASK_LEN, false))
 +            {
 +                status = SM_ERR_HARDWARE_ERROR;
 +            }
@@ -2458,10 +2458,10 @@ index 0000000..795a872
 +    uint8_t stat[PF09_MASK_LEN] = { 0 };
 +
 +    /* Read status of interrupts */
-+    (void) PF09_IntStatus(&pf09Dev, stat);
++    (void) PF09_IntStatus(&pf09Dev, stat, PF09_MASK_LEN);
 +
 +    /* Clear pending */
-+    (void) PF09_IntClear(&pf09Dev, stat);
++    (void) PF09_IntClear(&pf09Dev, stat, PF09_MASK_LEN);
 +
 +    /* Handle pending temp interrupts */
 +    if ((stat[PF09_MASK_IDX_STATUS2] & 0x0FU) != 0U)

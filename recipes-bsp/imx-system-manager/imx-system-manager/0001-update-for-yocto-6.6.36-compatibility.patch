@@ -1,0 +1,99 @@
+From a77855d3a08efa85dfcd7979699c83a6fcfccf16 Mon Sep 17 00:00:00 2001
+From: yaakov <yaakov.entin@compulab.co.il>
+Date: Tue, 26 Nov 2024 13:06:56 +0200
+Subject: [PATCH] update for yocto 6.6.36 compatibility
+
+---
+ boards/mcimx95cust/sm/brd_sm.h | 7 +++++--
+ configs/mx95cust/config_scmi.h | 5 ++---
+ configs/mx95cust/config_test.h | 2 +-
+ configs/mx95cust/config_trdc.h | 8 ++++----
+ 4 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/boards/mcimx95cust/sm/brd_sm.h b/boards/mcimx95cust/sm/brd_sm.h
+index a6e9cec..a8f21e2 100755
+--- a/boards/mcimx95cust/sm/brd_sm.h
++++ b/boards/mcimx95cust/sm/brd_sm.h
+@@ -59,8 +59,11 @@
+
+ /* Defines */
+
+-/*! Vendor string */
+-#define SCMI_SUB_VENDOR  "i.MX95 Cust"
++/*! Board name string */
++#define BRD_SM_NAME  "i.MX95 Cust"
++
++/*! Board attributes */
++#define BRD_SM_ATTR  0x0
+
+ /*!
+  * @name Board redirection defines
+diff --git a/configs/mx95cust/config_scmi.h b/configs/mx95cust/config_scmi.h
+index 9f88205..de54f80 100644
+--- a/configs/mx95cust/config_scmi.h
++++ b/configs/mx95cust/config_scmi.h
+@@ -93,7 +93,7 @@
+         .perlpiPerms[DEV_SM_PERLPI_WDOG5] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_GPIO_IO14] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_GPIO_IO15] = SM_SCMI_PERM_ALL, \
+-        .rtcPerms[DEV_SM_RTC_BBM] = SM_SCMI_PERM_PRIV, \
++        .rtcPerms[DEV_SM_RTC_BBNSM] = SM_SCMI_PERM_PRIV, \
+         .sensorPerms[BRD_SM_SENSOR_TEMP_PF09] = SM_SCMI_PERM_SET, \
+         .sensorPerms[BRD_SM_SENSOR_TEMP_PF5301] = SM_SCMI_PERM_SET, \
+         .sensorPerms[BRD_SM_SENSOR_TEMP_PF5302] = SM_SCMI_PERM_SET, \
+@@ -315,7 +315,6 @@
+         .clkPerms[DEV_SM_CLK_USDHC1] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_USDHC2] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_USDHC3] = SM_SCMI_PERM_ALL, \
+-        .clkPerms[DEV_SM_CLK_V2XPK] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_VIDEOPLL1] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_VIDEOPLL1_VCO] = SM_SCMI_PERM_ALL, \
+         .clkPerms[DEV_SM_CLK_VPUDSP] = SM_SCMI_PERM_ALL, \
+@@ -606,7 +605,7 @@
+         .pinPerms[DEV_SM_PIN_XSPI1_SCLK] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_XSPI1_SS0_B] = SM_SCMI_PERM_ALL, \
+         .pinPerms[DEV_SM_PIN_XSPI1_SS1_B] = SM_SCMI_PERM_ALL, \
+-        .rtcPerms[DEV_SM_RTC_BBM] = SM_SCMI_PERM_ALL, \
++        .rtcPerms[DEV_SM_RTC_BBNSM] = SM_SCMI_PERM_ALL, \
+         .sensorPerms[BRD_SM_SENSOR_TEMP_PF09] = SM_SCMI_PERM_ALL, \
+         .sensorPerms[BRD_SM_SENSOR_TEMP_PF5301] = SM_SCMI_PERM_SET, \
+         .sensorPerms[BRD_SM_SENSOR_TEMP_PF5302] = SM_SCMI_PERM_SET, \
+diff --git a/configs/mx95cust/config_test.h b/configs/mx95cust/config_test.h
+index 49a1b28..185cfa9 100644
+--- a/configs/mx95cust/config_test.h
++++ b/configs/mx95cust/config_test.h
+@@ -176,7 +176,7 @@
+     {.testId = TEST_PERLPI, .channel = 0U, .rsrc = DEV_SM_PERLPI_LPUART3}, \
+     {.testId = TEST_PERLPI, .channel = 5U, .rsrc = DEV_SM_PERLPI_LPUART8}, \
+     {.testId = TEST_PIN, .channel = 5U, .rsrc = DEV_SM_PIN_UART1_RXD}, \
+-    {.testId = TEST_RTC, .channel = 5U, .rsrc = DEV_SM_RTC_BBM}
++    {.testId = TEST_RTC, .channel = 5U, .rsrc = DEV_SM_RTC_BBNSM}
+
+ /*! Default channel for non-agent specific tests */
+ #define SM_TEST_DEFAULT_CHN  0U
+diff --git a/configs/mx95cust/config_trdc.h b/configs/mx95cust/config_trdc.h
+index c06eac1..ed49e99 100644
+--- a/configs/mx95cust/config_trdc.h
++++ b/configs/mx95cust/config_trdc.h
+@@ -1141,8 +1141,8 @@
+         SM_CFG_Z1(0x00010260U), \
+         SM_CFG_W1(0x00010270U), 0x00000090U, \
+         SM_CFG_W1(0x00010460U), 0x33000300U, \
+-        SM_CFG_W1(0x00010478U), 0x33000000U, \
+-        SM_CFG_W1(0x0001047cU), 0x00003333U, \
++        SM_CFG_W1(0x00010478U), 0x33300000U, \
++        SM_CFG_W1(0x0001047cU), 0x00003033U, \
+         SM_CFG_W1(0x000105d0U), 0x33333333U, \
+         SM_CFG_W1(0x000105d4U), 0x33333333U, \
+         SM_CFG_W1(0x000105d8U), 0x00000003U, \
+@@ -1187,8 +1187,8 @@
+         SM_CFG_W1(0x0001126cU), 0x03333333U, \
+         SM_CFG_W1(0x00011270U), 0x33303333U, \
+         SM_CFG_W1(0x00011274U), 0x33333333U, \
+-        SM_CFG_W1(0x00011278U), 0x33033333U, \
+-        SM_CFG_W1(0x0001127cU), 0x00333333U, \
++        SM_CFG_W1(0x00011278U), 0x33333333U, \
++        SM_CFG_W1(0x0001127cU), 0x00333033U, \
+         SM_CFG_W1(0x00011380U), 0x00000003U, \
+         SM_CFG_W1(0x000113a8U), 0x00000003U, \
+         SM_CFG_W1(0x000113d0U), 0x33333333U, \

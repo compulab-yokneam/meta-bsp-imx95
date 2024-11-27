@@ -5,22 +5,9 @@ Subject: [PATCH] Add CompuLab lpddr5_timing.c
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
- boards/mx95lp5/ddr/Makefile        |     3 +-
  boards/mx95lp5/ddr/lpddr5_timing.c | 10738 +++++++++++++++++++++++++++
- 2 files changed, 10740 insertions(+), 1 deletion(-)
  create mode 100644 boards/mx95lp5/ddr/lpddr5_timing.c
 
-diff --git a/boards/mx95lp5/ddr/Makefile b/boards/mx95lp5/ddr/Makefile
-index f3be37a..fd4a26c 100644
---- a/boards/mx95lp5/ddr/Makefile
-+++ b/boards/mx95lp5/ddr/Makefile
-@@ -1,4 +1,5 @@
--OBJS  += $(OUT)/XIMX95LPD5EVK19_6400mbps_train_timing.o
-+# OBJS  += $(OUT)/XIMX95LPD5EVK19_6400mbps_train_timing.o
-+OBJS  += $(OUT)/lpddr5_timing.o
- FLAGS += -DDDR5
- 
- VPATH += boards/mx95lp5/ddr
 diff --git a/boards/mx95lp5/ddr/lpddr5_timing.c b/boards/mx95lp5/ddr/lpddr5_timing.c
 new file mode 100644
 index 0000000..ead1d41

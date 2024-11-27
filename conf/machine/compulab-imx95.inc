@@ -31,7 +31,7 @@ DDR_FIRMWARE_NAME = " \
     lpddr5_imem_qb_v202311.bin \
 "
 
-M4_DEFAULT_IMAGE_MX95 = "imx95-19x19-evk_m7_TCM_power_mode_switch_rtos_imx95_sm_cm7.bin"
+M4_DEFAULT_IMAGE_MX95 = "imx95-19x19-evk_m7_TCM_power_mode_switch.bin"
 
 SYSTEM_MANAGER_CONFIG = "mx95cust"
 
