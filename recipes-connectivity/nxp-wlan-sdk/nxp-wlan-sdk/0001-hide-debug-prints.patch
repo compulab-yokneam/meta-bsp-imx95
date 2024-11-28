@@ -1,0 +1,90 @@
+From 5359c965d8a88dd54b7c81c152546cf1e650a9d5 Mon Sep 17 00:00:00 2001
+From: yaakov <yaakov.entin@compulab.co.il>
+Date: Thu, 28 Nov 2024 18:26:53 +0200
+Subject: [PATCH] hide debug prints
+
+---
+ Makefile           |  2 +-
+ mlinux/moal_shim.c | 14 +++++++-------
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index af1a9e5..aab690b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -62,7 +62,7 @@ CONFIG_PCIEAW693=n
+ # n: NO DEBUG
+ # 1: Only PRINTM(MMSG,...), PRINTM(MFATAL,...), ...
+ # 2: All PRINTM()
+-CONFIG_DEBUG=1
++CONFIG_DEBUG=0
+ 
+ # Enable STA mode support
+ CONFIG_STA_SUPPORT=y
+diff --git a/mlinux/moal_shim.c b/mlinux/moal_shim.c
+index 9bc0d75..f1fdca5 100644
+--- a/mlinux/moal_shim.c
++++ b/mlinux/moal_shim.c
+@@ -1178,7 +1178,7 @@ mlan_status moal_send_packet_complete(t_void *pmoal, pmlan_buffer pmbuf,
+ 				if (status == MLAN_STATUS_SUCCESS) {
+ 					priv->stats.tx_packets++;
+ 					priv->stats.tx_bytes += skb->len;
+-#if defined(STA_CFG80211) || defined(UAP_CFG80211)
++#if defined DEBUG_LEVEL1 && (defined(STA_CFG80211) || defined(UAP_CFG80211))
+ #if CFG80211_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+ 					if (drvdbg & MDAT_D)
+ 						woal_packet_fate_monitor(
+@@ -1191,7 +1191,7 @@ mlan_status moal_send_packet_complete(t_void *pmoal, pmlan_buffer pmbuf,
+ #endif
+ 				} else {
+ 					priv->stats.tx_errors++;
+-#if defined(STA_CFG80211) || defined(UAP_CFG80211)
++#if defined DEBUG_LEVEL1 && (defined(STA_CFG80211) || defined(UAP_CFG80211))
+ #if CFG80211_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+ 					if (drvdbg & MDAT_D)
+ 						woal_packet_fate_monitor(
+@@ -2262,7 +2262,7 @@ mlan_status moal_recv_packet(t_void *pmoal, pmlan_buffer pmbuf)
+ 					       __func__);
+ 					status = MLAN_STATUS_FAILURE;
+ 					priv->stats.rx_dropped++;
+-#if defined(STA_CFG80211) || defined(UAP_CFG80211)
++#if defined DEBUG_LEVEL1 && (defined(STA_CFG80211) || defined(UAP_CFG80211))
+ #if CFG80211_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+ 					if (drvdbg & MDAT_D)
+ 						woal_packet_fate_monitor(
+@@ -2380,7 +2380,7 @@ mlan_status moal_recv_packet(t_void *pmoal, pmlan_buffer pmbuf)
+ 						(skb->len - max_rx_data_size);
+ 			}
+ #endif
+-#if defined(STA_CFG80211) || defined(UAP_CFG80211)
++#if defined DEBUG_LEVEL1 && (defined(STA_CFG80211) || defined(UAP_CFG80211))
+ #if CFG80211_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+ 			if (!woal_filter_packet(priv, skb->data, skb->len, 0)) {
+ 				PRINTM(MEVENT, "drop filtered packet %s\n",
+@@ -2400,7 +2400,7 @@ mlan_status moal_recv_packet(t_void *pmoal, pmlan_buffer pmbuf)
+ #endif
+ 			priv->stats.rx_bytes += skb->len;
+ 			priv->stats.rx_packets++;
+-#if defined(STA_CFG80211) || defined(UAP_CFG80211)
++#if defined DEBUG_LEVEL1 && (defined(STA_CFG80211) || defined(UAP_CFG80211))
+ #if CFG80211_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+ 			if (drvdbg & MDAT_D)
+ 				woal_packet_fate_monitor(priv, PACKET_TYPE_RX,
+@@ -2831,7 +2831,7 @@ static t_void woal_process_event_tx_status(moal_private *priv,
+ #endif
+ #endif
+ 		}
+-#if defined(STA_CFG80211) || defined(UAP_CFG80211)
++#if defined DEBUG_LEVEL1 && (defined(STA_CFG80211) || defined(UAP_CFG80211))
+ #if CFG80211_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+ 		if (drvdbg & MDAT_D)
+ 			woal_packet_fate_monitor(priv, PACKET_TYPE_TX,
+@@ -4710,7 +4710,7 @@ mlan_status moal_recv_event(t_void *pmoal, pmlan_event pmevent)
+ #endif
+ #endif
+ 			}
+-#if defined(STA_CFG80211) || defined(UAP_CFG80211)
++#if defined DEBUG_LEVEL1 && (defined(STA_CFG80211) || defined(UAP_CFG80211))
+ #if CFG80211_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
+ 			if (drvdbg & MDAT_D)
+ 				woal_packet_fate_monitor(
