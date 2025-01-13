@@ -1,0 +1,38 @@
+From 61548221a1ebf1ab59e47ad65cad7625dcd18bc2 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Mon, 13 Jan 2025 15:02:56 +0200
+Subject: [PATCH 3/4] sm: Disable GPIO1-10 interrupt
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ boards/mcimx95cust/sm/brd_sm_handlers.c | 14 --------------
+ 1 file changed, 14 deletions(-)
+
+diff --git a/boards/mcimx95cust/sm/brd_sm_handlers.c b/boards/mcimx95cust/sm/brd_sm_handlers.c
+index a24ba45..5025434 100755
+--- a/boards/mcimx95cust/sm/brd_sm_handlers.c
++++ b/boards/mcimx95cust/sm/brd_sm_handlers.c
+@@ -178,20 +178,6 @@ int32_t BRD_SM_SerialDevicesInit(void)
+         }
+     }
+ 
+-    if (status == SM_ERR_SUCCESS)
+-    {
+-        rgpio_pin_config_t gpioConfig =
+-        {
+-            kRGPIO_DigitalInput,
+-            0U
+-        };
+-
+-        /* Init GPIO1-10 */
+-        RGPIO_PinInit(GPIO1, 10U, &gpioConfig);
+-        RGPIO_SetPinInterruptConfig(GPIO1, 10U, kRGPIO_InterruptOutput0,
+-            kRGPIO_InterruptLogicZero);
+-    }
+-
+     /* Return status */
+     return status;
+ }
+-- 
+2.34.1
+
