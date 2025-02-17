@@ -11,12 +11,12 @@
 * NXP:
 ```
 mkdir compulab-nxp-bsp && cd compulab-nxp-bsp
-repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-scarthgap -m imx-6.6.36-2.1.0.xml
+repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-scarthgap -m imx-6.6.52-2.2.0.xml
 ```
 * CompuLab:
 ```
 mkdir -p .repo/local_manifests
-wget --directory-prefix .repo/local_manifests https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/scarthgap-6.6.36-EVAL-UCM-iMX95-1.0/scripts/meta-bsp-imx95.xml
+wget --directory-prefix .repo/local_manifests https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/scarthgap-6.6.52-EVAL-UCM-iMX95-2.0/scripts/meta-bsp-imx95.xml
 repo sync
 ```
 ## Setup Yocto build environment
