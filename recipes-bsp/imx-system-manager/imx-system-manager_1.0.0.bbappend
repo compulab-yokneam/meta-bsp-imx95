@@ -1,8 +1,9 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI += "file://0001-Add-mcimx95cust-board.patch \
-            file://0002-Fix-null-pionter-except.patch \
-            file://0001-update-for-yocto-6.6.36-compatibility.patch \
-            "
+SRC_URI += " \
+	file://0001-Add-mcimx95cpl-board-support.patch \
+	file://0002-fsl_lpi2c-Prevent-the-SM-null-pointer-exception.patch \
+	file://0003-HACK-Prevent-the-u-boot-hang-while-asking-the-temper.patch \
+"
 
-SYSTEM_MANAGER_CONFIG = "mx95cust"
+PATCHTOOL = "git"
