@@ -1,8 +1,4 @@
 # Disclaimer                                                                                                                                                                                                                                                                    
-
-| !IMPORTANT! | This branch is not a release |
-|---|---|
-
 ## Supported Compulab Products
 [UCM-iMX95 - i.MX95 SMD System-on-Module](https://www.compulab.com/products/computer-on-modules/ucm-imx95-nxp-i-mx-95-som-system-on-module/)
 
