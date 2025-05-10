@@ -1,0 +1,23 @@
+From 872a4a85b2547af530e36e9aeb23bf1641bbf8d2 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 8 May 2025 11:46:40 +0300
+Subject: [PATCH 2/3] board: mx95lp5: Fix default DDR_CONFIG timing name
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ boards/mx95lp5/ddr/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/boards/mx95lp5/ddr/Makefile b/boards/mx95lp5/ddr/Makefile
+index 5977c98..f46a206 100644
+--- a/boards/mx95lp5/ddr/Makefile
++++ b/boards/mx95lp5/ddr/Makefile
+@@ -1,4 +1,4 @@
+-DDR_CONFIG ?= XIMX95LPD5EVK19_6400mbps_train_timing
++DDR_CONFIG ?= lpddr5_timing
+ OBJS  += $(OUT)/$(DDR_CONFIG).o
+ 
+ VPATH += boards/mx95lp5/ddr
+-- 
+2.34.1
+
