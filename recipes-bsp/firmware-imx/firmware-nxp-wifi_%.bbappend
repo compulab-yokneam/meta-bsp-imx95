@@ -8,15 +8,24 @@ SUMMIT_DIR = "${WORKDIR}/summit/lib/firmware"
 do_install:append() {
 
     install -d ${D}${nonarch_base_libdir}/firmware/nxp
+    install -d ${D}${nonarch_base_libdir}/modules-load.d
 
     for f in ${SUMMIT_DIR}/nxp/rgpower* ${SUMMIT_DIR}/nxp/sduart_nw61x* ${SUMMIT_DIR}/nxp/wifi_prod_params.conf; do
         install -D -m 0644 $f ${D}${nonarch_base_libdir}/firmware/nxp/$(basename $f)
     done
 
+    echo "options moal mod_para=nxp/wifi_prod_params.conf" > ${WORKDIR}/lib_moal.conf
+    install -D -m 0644 ${WORKDIR}/lib_moal.conf ${D}${nonarch_base_libdir}/modprobe.d/moal.conf
+
+    echo "moal" > ${WORKDIR}/etc_moal.conf
+    install -D -m 0644 ${WORKDIR}/etc_moal.conf ${D}${nonarch_base_libdir}/modules-load.d/moal.conf
+
 }
 
-FILES:${PN}-nxpiw612-sdio:append= " \
+FILES:${PN}-nxpiw612-sdio:append = " \
     ${nonarch_base_libdir}/firmware/nxp/sduart_nw61x_* \
     ${nonarch_base_libdir}/firmware/nxp/rgpower* \
     ${nonarch_base_libdir}/firmware/nxp/wifi_prod_params.conf \
+    ${nonarch_base_libdir}/modules-load.d/moal.conf \
+    ${nonarch_base_libdir}/modprobe.d/moal.conf \
 "
