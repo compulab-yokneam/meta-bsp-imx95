@@ -30,7 +30,7 @@ source compulab-setup-env build-${MACHINE}
 bitbake -k imx-image-full
 image_location=${BUILDDIR}/tmp/deploy/images/${MACHINE}/imx-image-full-${MACHINE}*.wic.zst
 ```
-## Building bootloader only (optional)
+## Building bootloader only (optional):
 * Build command
 ```
 bitbake -k imx-boot
@@ -47,15 +47,15 @@ sudo zstd -dc $image_location | sudo dd bs=1M status=progress of=/dev/sdX
 * Insert the created sd-card
 * short alt. boot jumper
 * Power on
+
 ### UUU method
 #### Host Machine ####
-* Update bootlader and the rootfs
+* Update bootloader and the rootfs:
 ```
 cd ${BUILDDIR}/tmp/deploy/images/${MACHINE}
 sudo uuu -v -b emmc_all imx-boot-tagged imx-image-full-${MACHINE}.wic.zst
 ```
-
-* Update bootlader only
+* Update bootloader only:
 ```
 cd ${BUILDDIR}/tmp/deploy/images/${MACHINE}
 sudo uuu -v -b emmc imx-boot-tagged
