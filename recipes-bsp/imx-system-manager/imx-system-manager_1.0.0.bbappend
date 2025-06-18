@@ -7,4 +7,8 @@ SRC_URI += " \
 	file://0004-monitor_cmds-lm-Allow-set-default-lm-number.patch \
 "
 
+SRC_URI += " \
+	file://0005-configs-mx95cpl-change-LPTPM1-ownership.patch \
+"
+
 PATCHTOOL = "git"
