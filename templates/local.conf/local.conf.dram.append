@@ -1,0 +1,2 @@
+# Uncomment next line if 4G dram is in use
+# DRAM_CONF = "D4"
