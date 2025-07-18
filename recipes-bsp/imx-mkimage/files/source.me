@@ -1,0 +1,11 @@
+#!/bin/bash
+
+do_make() {
+    make SOC=iMX95 REV=A0 OEI=YES LPDDR_TYPE=lpddr5 clean
+    make SOC=iMX95 REV=A0 OEI=YES LPDDR_TYPE=lpddr5 flash_all
+    make SOC=iMX95 REV=A0 OEI=YES LPDDR_TYPE=lpddr5 flash_all_no_m7
+}
+
+cat << eof
+    do_make -- issue flash_all/flash_all_no_m7 build
+eof
