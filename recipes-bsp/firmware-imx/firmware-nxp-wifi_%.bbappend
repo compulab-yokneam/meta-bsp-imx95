@@ -3,7 +3,7 @@ SRC_URI:append = " https://github.com/Ezurio/SonaNX-Release-Packages/releases/do
 SRC_URI[nx61x-firmware.md5sum] = "0521ee3abd44741efbc8074712bc5b3a"
 SRC_URI[nx61x-firmware.sha256sum] = "26e46606063a1a0574e5120f0a4bd90af8453025cac80bbd1e49dbff9f501cd3"
 
-SUMMIT_DIR = "${WORKDIR}/summit/lib/firmware"
+SUMMIT_DIR = "${UNPACKDIR}/summit/lib/firmware"
 
 do_install:append() {
 
