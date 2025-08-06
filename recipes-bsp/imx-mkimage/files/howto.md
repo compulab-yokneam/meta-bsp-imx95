@@ -1,19 +1,27 @@
-* imx-oei
+* Cross & Environment
 ```
-make -j 32 board=mx95lp5 DEBUG=1 OEI_CROSS_COMPILE=arm-none-eabi- DDR_CONFIG=lpddr5_timing oei=ddr
-make -j 32 board=mx95lp5 DEBUG=1 OEI_CROSS_COMPILE=arm-none-eabi- DDR_CONFIG=lpddr5_timing oei=tcm
+export SM_CROSS_COMPILE=/opt/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-
+export OEI_CROSS_COMPILE=${SM_CROSS_COMPILE}
+export TOOLS=/opt/imx-oei
+export ARCH=arm
+sudo mkdir -p ${TOOLS}
+sudo ln -sf dirname $(dirname ${SM_CROSS_COMPILE}) ${TOOLS}/
 ```
 
-* imxsystem-manager
+* imx-oei
 ```
-make -j 23 V=y SM_CROSS_COMPILE=arm-none-eabi- M=2 config=mx95cpl clean
-make -j 23 V=y SM_CROSS_COMPILE=arm-none-eabi- M=2 config=mx95cpl cfg
-make -j 32 V=y SM_CROSS_COMPILE=arm-none-eabi- M=2 config=mx95cpl
+make -j 32 board=mx95lp5 DEBUG=1 DDR_CONFIG=lpddr5_timing r=B0 oei=ddr
+make -j 32 board=mx95lp5 DEBUG=1 DDR_CONFIG=lpddr5_timing r=B0 oei=tcm
+```
+
+* imx-system-manager
+```
+make -j 32 V=y M=2 config=mx95cpl
 ```
 
 * imx-boot all
 ```
-make SOC=iMX95 REV=A0 OEI=YES LPDDR_TYPE=lpddr5 flash_all
+make SOC=iMX95 REV=B0 OEI=YES LPDDR_TYPE=lpddr5 flash_all
 ```
 
 * imx-boot w/out m7
