@@ -1,4 +1,4 @@
-From 2017cbe97274e642612c1b099c8e06992b57715d Mon Sep 17 00:00:00 2001
+From 51da6440147d0771787c52db569dee90727d5153 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
 Date: Thu, 8 May 2025 11:47:11 +0300
 Subject: [PATCH 3/3] Add CompuLab lpddr5_timing_4g.c

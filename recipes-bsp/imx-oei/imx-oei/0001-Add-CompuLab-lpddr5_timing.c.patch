@@ -1,16 +1,17 @@
-From a1bb9abb311e73faa91d7a48ed180cf332402611 Mon Sep 17 00:00:00 2001
+From 42add7bf59ecf3a6a5c82fcce277c701d0ecbd08 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
 Date: Sun, 15 Sep 2024 17:09:25 +0300
-Subject: [PATCH] Add CompuLab lpddr5_timing.c
+Subject: [PATCH 1/3] Add CompuLab lpddr5_timing.c
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
  boards/mx95lp5/ddr/lpddr5_timing.c | 10738 +++++++++++++++++++++++++++
+ 1 file changed, 10738 insertions(+)
  create mode 100644 boards/mx95lp5/ddr/lpddr5_timing.c
 
 diff --git a/boards/mx95lp5/ddr/lpddr5_timing.c b/boards/mx95lp5/ddr/lpddr5_timing.c
 new file mode 100644
-index 0000000..ead1d41
+index 0000000..140581e
 --- /dev/null
 +++ b/boards/mx95lp5/ddr/lpddr5_timing.c
 @@ -0,0 +1,10738 @@
@@ -10752,3 +10753,6 @@ index 0000000..ead1d41
 +    .fsp_cfg_num = ARRAY_SIZE(ddr_dram_fsp_cfg),
 +};
 +
+-- 
+2.34.1
+
