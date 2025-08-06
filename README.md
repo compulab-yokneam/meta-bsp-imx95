@@ -1,12 +1,14 @@
 # Disclaimer                                                                                                                                                                                                                                                                    
-
 | !IMPORTANT! | This branch is not a release |
 |---|---|
 
-## Supported Compulab Products
+# Intro
+* Supported Compulab Products<br>
 [UCM-iMX95 - i.MX95 SMD System-on-Module](https://www.compulab.com/products/computer-on-modules/ucm-imx95-nxp-i-mx-95-som-system-on-module/)
 
-**Preferred OS for build host is Ubuntu 22.04. It can be utilized with Docker: https://github.com/compulab-yokneam/yocker**
+* Preferred OS for build host is Ubuntu 22.04. It can be utilized with [Docker](https://github.com/compulab-yokneam/yocker)
+
+
 ## Initialize repo manifests
 * NXP:
 ```
