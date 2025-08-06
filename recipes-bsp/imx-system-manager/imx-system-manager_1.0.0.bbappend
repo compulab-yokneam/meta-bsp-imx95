@@ -1,14 +1,10 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI += " \
-	file://0001-Add-mcimx95cpl-board-support.patch \
-	file://0002-fsl_lpi2c-Prevent-the-SM-null-pointer-exception.patch \
-	file://0003-HACK-Prevent-the-u-boot-hang-while-asking-the-temper.patch \
-	file://0004-monitor_cmds-lm-Allow-set-default-lm-number.patch \
-"
-
-SRC_URI += " \
-	file://0005-configs-mx95cpl-change-LPTPM1-ownership.patch \
+	file://0001-compulab-Add-boards-mcimx95cpl.patch \
+	file://0002-compulab-Apply-the-imx95-CompuLab-SOM-changes.patch \
+	file://0003-compulab-Add-configs-mx95cpl.cfg.patch \
+	file://0004-compulab-board-mcimx95cpl-Use-warm-reset-instead-of-.patch \
 "
 
 PATCHTOOL = "git"

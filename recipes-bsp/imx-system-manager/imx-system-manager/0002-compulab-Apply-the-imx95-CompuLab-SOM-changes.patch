@@ -1,0 +1,81 @@
+From b10ab8347d8daf5a78b2bc9b36bcae748e29646f Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sun, 3 Aug 2025 23:07:41 +0300
+Subject: [PATCH 2/4] compulab: Apply the imx95 CompuLab SOM changes
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ boards/mcimx95cpl/pin_mux.c            |  4 ----
+ boards/mcimx95cpl/sm/brd_sm_handlers.c | 30 --------------------------
+ 2 files changed, 34 deletions(-)
+
+diff --git a/boards/mcimx95cpl/pin_mux.c b/boards/mcimx95cpl/pin_mux.c
+index b40d897..797150c 100755
+--- a/boards/mcimx95cpl/pin_mux.c
++++ b/boards/mcimx95cpl/pin_mux.c
+@@ -50,9 +50,5 @@ void BOARD_InitPins(void)
+     IOMUXC_SetPinConfig(IOMUXC_PAD_I2C2_SDA__LPI2C2_SDA, IOMUXC_PAD_DSE(0xFU)
+         | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
+ #endif
+-
+-    /* Configure GPIO1-10 (INT from the PCAL6408A */
+-    IOMUXC_SetPinMux(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
+-    IOMUXC_SetPinConfig(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
+ }
+ 
+diff --git a/boards/mcimx95cpl/sm/brd_sm_handlers.c b/boards/mcimx95cpl/sm/brd_sm_handlers.c
+index a96f6ce..bb71364 100755
+--- a/boards/mcimx95cpl/sm/brd_sm_handlers.c
++++ b/boards/mcimx95cpl/sm/brd_sm_handlers.c
+@@ -96,27 +96,11 @@ int32_t BRD_SM_SerialDevicesInit(void)
+ {
+     int32_t status = SM_ERR_SUCCESS;
+     LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
+-    pcal6408a_config_t pcal6408Config;
+ 
+     /* Fill in PCAL6408A dev */
+     g_pcal6408aDev.i2cBase = s_i2cBases[BOARD_I2C_INSTANCE];
+     g_pcal6408aDev.devAddr = BOARD_PCAL6408A_DEV_ADDR;
+ 
+-    /* Init the bus expander */
+-    PCAL6408A_GetDefaultConfig(&pcal6408Config);
+-    pcal6408Config.inputLatch = 0xFFU;
+-    if (!PCAL6408A_Init(&g_pcal6408aDev, &pcal6408Config))
+-    {
+-        status = SM_ERR_HARDWARE_ERROR;
+-    }
+-    else
+-    {
+-        if (!PCAL6408A_IntMaskSet(&g_pcal6408aDev, PCAL6408A_INITIAL_MASK))
+-        {
+-            status = SM_ERR_HARDWARE_ERROR;
+-        }
+-    }
+-
+     if (status == SM_ERR_SUCCESS)
+     {
+         /* Fill in PF09 PMIC handle */
+@@ -254,20 +238,6 @@ int32_t BRD_SM_SerialDevicesInit(void)
+         }
+     }
+ 
+-    if (status == SM_ERR_SUCCESS)
+-    {
+-        rgpio_pin_config_t gpioConfig =
+-        {
+-            kRGPIO_DigitalInput,
+-            0U
+-        };
+-
+-        /* Init GPIO1-10 */
+-        RGPIO_PinInit(GPIO1, 10U, &gpioConfig);
+-        RGPIO_SetPinInterruptConfig(GPIO1, 10U, kRGPIO_InterruptOutput0,
+-            kRGPIO_InterruptLogicZero);
+-    }
+-
+     /* Return status */
+     return status;
+ }
+-- 
+2.34.1
+

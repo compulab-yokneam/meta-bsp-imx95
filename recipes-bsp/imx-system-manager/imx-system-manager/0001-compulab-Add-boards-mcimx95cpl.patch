@@ -1,30 +1,36 @@
-From 1f8bb0d94ce10a2c80b62aa7ceda2e7426daf025 Mon Sep 17 00:00:00 2001
+From 087fbcf249c683397758f3ad700cfd3aa5aad6a1 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
-Date: Sun, 16 Feb 2025 12:38:23 +0200
-Subject: [PATCH 1/3] Add mcimx95cpl board support
+Date: Sun, 3 Aug 2025 23:02:07 +0300
+Subject: [PATCH 1/4] compulab: Add boards/mcimx95cpl
+
+Add boards/mcimx95cpl:
+
+cp -a boards/mcimx95evk boards/mcimx95cpl
+cd boards/mcimx95cpl
+for f in $(find . -type f);do sed -i  's/95EVK/95CPL/g' ${f}; done
+cd -
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
- boards/mcimx95cpl/board.c              | 579 +++++++++++++++
- boards/mcimx95cpl/board.h              | 164 ++++
- boards/mcimx95cpl/pin_mux.c            |  54 ++
+ boards/mcimx95cpl/board.c              | 579 +++++++++++++++++++++
+ boards/mcimx95cpl/board.h              | 164 ++++++
+ boards/mcimx95cpl/pin_mux.c            |  58 +++
  boards/mcimx95cpl/pin_mux.h            |  44 ++
- boards/mcimx95cpl/sm/Makefile          |  70 ++
- boards/mcimx95cpl/sm/brd_sm.c          | 657 ++++++++++++++++
+ boards/mcimx95cpl/sm/Makefile          |  70 +++
+ boards/mcimx95cpl/sm/brd_sm.c          | 665 ++++++++++++++++++++++++
  boards/mcimx95cpl/sm/brd_sm.dox        |  55 ++
- boards/mcimx95cpl/sm/brd_sm.h          |  97 +++
- boards/mcimx95cpl/sm/brd_sm_bbm.c      | 544 ++++++++++++++
- boards/mcimx95cpl/sm/brd_sm_bbm.h      | 242 ++++++
- boards/mcimx95cpl/sm/brd_sm_control.c  | 317 ++++++++
- boards/mcimx95cpl/sm/brd_sm_control.h  | 202 +++++
- boards/mcimx95cpl/sm/brd_sm_handlers.c | 327 ++++++++
- boards/mcimx95cpl/sm/brd_sm_handlers.h | 129 ++++
- boards/mcimx95cpl/sm/brd_sm_sensor.c   | 367 +++++++++
- boards/mcimx95cpl/sm/brd_sm_sensor.h   | 210 ++++++
- boards/mcimx95cpl/sm/brd_sm_voltage.c  | 517 +++++++++++++
- boards/mcimx95cpl/sm/brd_sm_voltage.h  | 213 ++++++
- configs/mx95cpl.cfg                    | 991 +++++++++++++++++++++++++
- 19 files changed, 5779 insertions(+)
+ boards/mcimx95cpl/sm/brd_sm.h          | 100 ++++
+ boards/mcimx95cpl/sm/brd_sm_bbm.c      | 674 +++++++++++++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_bbm.h      | 242 +++++++++
+ boards/mcimx95cpl/sm/brd_sm_control.c  | 317 ++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_control.h  | 202 ++++++++
+ boards/mcimx95cpl/sm/brd_sm_handlers.c | 372 ++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_handlers.h | 129 +++++
+ boards/mcimx95cpl/sm/brd_sm_sensor.c   | 375 ++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_sensor.h   | 210 ++++++++
+ boards/mcimx95cpl/sm/brd_sm_voltage.c  | 565 +++++++++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_voltage.h  | 213 ++++++++
+ 18 files changed, 5034 insertions(+)
  create mode 100755 boards/mcimx95cpl/board.c
  create mode 100755 boards/mcimx95cpl/board.h
  create mode 100755 boards/mcimx95cpl/pin_mux.c
@@ -43,16 +49,15 @@ Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
  create mode 100755 boards/mcimx95cpl/sm/brd_sm_sensor.h
  create mode 100755 boards/mcimx95cpl/sm/brd_sm_voltage.c
  create mode 100755 boards/mcimx95cpl/sm/brd_sm_voltage.h
- create mode 100755 configs/mx95cpl.cfg
 
 diff --git a/boards/mcimx95cpl/board.c b/boards/mcimx95cpl/board.c
 new file mode 100755
-index 0000000..c07dc35
+index 0000000..d4a671f
 --- /dev/null
 +++ b/boards/mcimx95cpl/board.c
 @@ -0,0 +1,579 @@
 +/*
-+ * Copyright 2023-2024 NXP
++ * Copyright 2023-2025 NXP
 + *
 + * SPDX-License-Identifier: BSD-3-Clause
 + */
@@ -299,12 +304,12 @@ index 0000000..c07dc35
 +/*--------------------------------------------------------------------------*/
 +void BOARD_InitClocks(void)
 +{
-+    uint32_t fuseTrim = FSB->FUSE[FSB_FUSE_ANA_CFG4];
++    uint32_t fuseTrim = DEV_SM_FuseGet(DEV_SM_FUSE_FRO_TRIM);
 +
 +    if (fuseTrim == 0U)
 +    {
 +        /* Enable the FRO clock with default value */
-+        (void)FRO_SetEnable(true);
++        (void) FRO_SetEnable(true);
 +    }
 +    else
 +    {
@@ -355,7 +360,7 @@ index 0000000..c07dc35
 +        lpuart_config.enableTx = true;
 +        lpuart_config.enableRx = true;
 +        (void) LPUART_Init(s_uartConfig.base, &lpuart_config,
-+            (uint32_t) rate & 0xFFFFFFFFU);
++            U64_U32(rate));
 +    }
 +}
 +
@@ -531,7 +536,7 @@ index 0000000..c07dc35
 +    };
 +    uint32_t clockId = s_i2cClks[BOARD_I2C_INSTANCE];
 +
-+    uint32_t rate = (uint32_t) CCM_RootGetRate(clockId);
++    uint32_t rate = U64_U32(CCM_RootGetRate(clockId));
 +
 +    LPI2C_MasterGetDefaultConfig(&lpi2cConfig);
 +
@@ -802,10 +807,10 @@ index 0000000..61ca03c
 +
 diff --git a/boards/mcimx95cpl/pin_mux.c b/boards/mcimx95cpl/pin_mux.c
 new file mode 100755
-index 0000000..797150c
+index 0000000..b40d897
 --- /dev/null
 +++ b/boards/mcimx95cpl/pin_mux.c
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,58 @@
 +/*
 + * Copyright 2023 NXP
 + *
@@ -858,6 +863,10 @@ index 0000000..797150c
 +    IOMUXC_SetPinConfig(IOMUXC_PAD_I2C2_SDA__LPI2C2_SDA, IOMUXC_PAD_DSE(0xFU)
 +        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
 +#endif
++
++    /* Configure GPIO1-10 (INT from the PCAL6408A */
++    IOMUXC_SetPinMux(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
++    IOMUXC_SetPinConfig(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
 +}
 +
 diff --git a/boards/mcimx95cpl/pin_mux.h b/boards/mcimx95cpl/pin_mux.h
@@ -912,7 +921,7 @@ index 0000000..de568c3
 +
 diff --git a/boards/mcimx95cpl/sm/Makefile b/boards/mcimx95cpl/sm/Makefile
 new file mode 100755
-index 0000000..acc2d3f
+index 0000000..d5b5767
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/Makefile
 @@ -0,0 +1,70 @@
@@ -948,7 +957,7 @@ index 0000000..acc2d3f
 +##
 +## ###################################################################
 +
-+BOARD ?= mcimx95cpl
++BOARD ?= mcimx95evk
 +BRD_SM_API_DIR = $(ROOT_DIR)/sm/brd
 +BOARDS_DIR = $(ROOT_DIR)/boards
 +BOARD_DIR = $(BOARDS_DIR)/$(BOARD)
@@ -988,14 +997,14 @@ index 0000000..acc2d3f
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm.c b/boards/mcimx95cpl/sm/brd_sm.c
 new file mode 100755
-index 0000000..7715633
+index 0000000..cd48b59
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm.c
-@@ -0,0 +1,657 @@
+@@ -0,0 +1,665 @@
 +/*
 +** ###################################################################
 +**
-+** Copyright 2023-2024 NXP
++** Copyright 2023-2025 NXP
 +**
 +** Redistribution and use in source and binary forms, with or without modification,
 +** are permitted provided that the following conditions are met:
@@ -1099,7 +1108,6 @@ index 0000000..7715633
 +
 +/* Performance parameters */
 +#define BOARD_PERF_LEVEL  DEV_SM_PERF_LVL_ODV  /* Target perf level */
-+#define BOARD_PERF_VDROP  20000                /* Perf voltage drop */
 +#if BOARD_VOLT_SOC >= ES_ODV_UV_VDD_SOC
 +#define BOARD_BOOT_LEVEL  DEV_SM_PERF_LVL_ODV  /* Boot perf overdrive */
 +#elif BOARD_VOLT_SOC >= ES_NOM_UV_VDD_SOC
@@ -1165,17 +1173,14 @@ index 0000000..7715633
 +    /* Configure ISO controls based on feature fuses */
 +    uint32_t ipIsoMask = 0U;
 +
-+    /* Deassert PCIe ISO if corresponding module is enabled */
-+    uint32_t fuseHwCfg2 = FSB->FUSE[FSB_FUSE_HW_CFG2];
-+
 +    /* PCIe1 is tied to HSIO ISO[0] */
-+    if ((fuseHwCfg2 & FSB_FUSE_HW_CFG2_PCIE1_DISABLE_MASK) == 0U)
++    if (DEV_SM_FuseGet(DEV_SM_FUSE_PCIE1_DISABLE) == 0U)
 +    {
 +        ipIsoMask |= SRC_XSPR_SLICE_SW_CTRL_ISO_CTRL_0_MASK;
 +    }
 +
 +    /* PCIe2 is tied to HSIO ISO[1] */
-+    if ((fuseHwCfg2 & FSB_FUSE_HW_CFG2_PCIE2_DISABLE_MASK) == 0U)
++    if (DEV_SM_FuseGet(DEV_SM_FUSE_PCIE2_DISABLE) == 0U)
 +    {
 +        ipIsoMask |= SRC_XSPR_SLICE_SW_CTRL_ISO_CTRL_1_MASK;
 +    }
@@ -1193,7 +1198,7 @@ index 0000000..7715633
 +/*--------------------------------------------------------------------------*/
 +/* Exit function                                                            */
 +/*--------------------------------------------------------------------------*/
-+void BRD_SM_Exit(int32_t status, uint32_t pc)
++_Noreturn void BRD_SM_Exit(int32_t status, uint32_t pc)
 +{
 +#if defined(MONITOR) || defined(RUN_TEST)
 +    printf("exit %d, 0x%08X\n", status, pc);
@@ -1390,11 +1395,14 @@ index 0000000..7715633
 +#endif
 +
 +    /* PMIC reset? */
-+    if ((g_pmicFaultFlags & ~PF09_XRESET_FLG) != 0U)
++    if ((g_pmicFaultFlags & (PF09_XFAIL_FLG | PF09_WD_FLG
++        | PF09_HFAULT_FLG)) != 0U)
 +    {
 +        shutdownRec->valid = true;
 +        shutdownRec->reset = true;
 +        shutdownRec->reason = DEV_SM_REASON_PMIC;
++        shutdownRec->validErr = false;
++        shutdownRec->validOrigin = false;
 +        shutdownRec->extLen = 1U;
 +        shutdownRec->extInfo[0] = g_pmicFaultFlags;
 +    }
@@ -1619,20 +1627,29 @@ index 0000000..7715633
 +/*--------------------------------------------------------------------------*/
 +/* Set voltage of specified SoC supply                                      */
 +/*--------------------------------------------------------------------------*/
-+int32_t BRD_SM_SupplyLevelSet(uint32_t domain, uint32_t microVolt)
++int32_t BRD_SM_SupplyLevelSet(uint32_t domain, int32_t microVolt)
 +{
-+    /* Set voltage level */
-+    return BRD_SM_VoltageLevelSet(domain, ((int32_t) microVolt)
-+        + BOARD_PERF_VDROP);
++    int32_t status = SM_ERR_INVALID_PARAMETERS;
++
++    /* Check for wrap */
++    if (microVolt <= (INT32_MAX - BOARD_PERF_VDROP))
++    {
++        /* Set voltage level */
++        status = BRD_SM_VoltageLevelSet(domain, microVolt
++            + BOARD_PERF_VDROP);
++    }
++
++    /* Return status */
++    return status;
 +}
 +
 +/*--------------------------------------------------------------------------*/
 +/* Get voltage of specified SoC supply                                      */
 +/*--------------------------------------------------------------------------*/
-+int32_t BRD_SM_SupplyLevelGet(uint32_t domain, uint32_t *microVolt)
++int32_t BRD_SM_SupplyLevelGet(uint32_t domain, int32_t *microVolt)
 +{
 +    /* Get voltage level */
-+    return BRD_SM_VoltageLevelGet(domain, (int32_t*) microVolt);
++    return BRD_SM_VoltageLevelGet(domain, microVolt);
 +}
 +
 +/*==========================================================================*/
@@ -1651,7 +1668,7 @@ index 0000000..7715633
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm.dox b/boards/mcimx95cpl/sm/brd_sm.dox
 new file mode 100755
-index 0000000..13e5e20
+index 0000000..48b9666
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm.dox
 @@ -0,0 +1,55 @@
@@ -1698,7 +1715,7 @@ index 0000000..13e5e20
 +
 +@defgroup BRD_SM_MX95CPL BOARD_MX95CPL: i.MX95 EVK SM Implementation
 +
-+@brief Module for the i.MX95 EVK for the SM.
++@brief Module for the i.MX95 CompuLab SOM.
 +
 +Board Module
 +============
@@ -1712,10 +1729,10 @@ index 0000000..13e5e20
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm.h b/boards/mcimx95cpl/sm/brd_sm.h
 new file mode 100755
-index 0000000..457d3d0
+index 0000000..96ff3af
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm.h
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,100 @@
 +/*
 +** ###################################################################
 +**
@@ -1784,6 +1801,9 @@ index 0000000..457d3d0
 +/*! Board attributes */
 +#define BRD_SM_ATTR  0x0
 +
++/*! Perf voltage drop */
++#define BOARD_PERF_VDROP  20000
++
 +/*!
 + * @name Board redirection defines
 + * @{
@@ -1815,14 +1835,14 @@ index 0000000..457d3d0
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_bbm.c b/boards/mcimx95cpl/sm/brd_sm_bbm.c
 new file mode 100755
-index 0000000..76a939e
+index 0000000..c2e5cd6
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_bbm.c
-@@ -0,0 +1,544 @@
+@@ -0,0 +1,674 @@
 +/*
 +** ###################################################################
 +**
-+** Copyright 2024 NXP
++** Copyright 2025 NXP
 +**
 +** Redistribution and use in source and binary forms, with or without modification,
 +** are permitted provided that the following conditions are met:
@@ -1875,7 +1895,7 @@ index 0000000..76a939e
 +
 +/* Local functions */
 +
-+static void days2date(uint32_t days, uint32_t *year, uint32_t *month,
++static bool days2date(uint32_t days, uint32_t *year, uint32_t *month,
 +    uint32_t *day, uint32_t *weekday);
 +static void date2days(uint32_t year, uint32_t month, uint32_t day,
 +    uint32_t *days);
@@ -1900,12 +1920,12 @@ index 0000000..76a939e
 +        /* Copy buffer (convert to 8-bit) */
 +        for (uint32_t idx = 0U; idx < numVal; idx++)
 +        {
-+            buf[idx] = (uint8_t) val[idx];
++            buf[idx] = U32_U8(val[idx]);
 +        }
 +
 +        /* Write data */
-+        if (!PCA2131_RtcWrite(&g_pca2131Dev, (uint8_t) addr,
-+            (uint8_t) numVal, buf))
++        if (!PCA2131_RtcWrite(&g_pca2131Dev, U32_U8(addr),
++            U32_U8(numVal), buf))
 +        {
 +            status = SM_ERR_HARDWARE_ERROR;
 +        }
@@ -1932,8 +1952,8 @@ index 0000000..76a939e
 +        uint8_t buf[24] = { 0 };
 +
 +        /* Read data */
-+        if (PCA2131_RtcRead(&g_pca2131Dev, (uint8_t) addr,
-+            (uint8_t) numVal, buf))
++        if (PCA2131_RtcRead(&g_pca2131Dev, U32_U8(addr),
++            U32_U8(numVal), buf))
 +        {
 +            /* Copy buffer (convert to 32-bit) */
 +            for (uint32_t idx = 0U; idx < numVal; idx++)
@@ -2031,13 +2051,13 @@ index 0000000..76a939e
 +            sec64 = val / 100U;
 +            hun64 = val - (sec64 * 100U);
 +
-+            secs = (uint32_t) sec64;
-+            hun = (uint32_t) hun64;
++            secs = U64_U32(sec64);
++            hun = U64_U32(hun64);
 +        }
 +        else
 +        {
 +            hun = 0U;
-+            secs = (uint32_t) val;
++            secs = U64_U32(val);
 +        }
 +
 +        /* Calculate totals */
@@ -2051,16 +2071,22 @@ index 0000000..76a939e
 +        hour = hours % 24U;
 +
 +        /* Convert to date */
-+        days2date((uint32_t) days, &year, &month, &day, &weekday);
-+
-+        /* Convert year */
-+        year %= 100U;
-+
-+        /* Write RTC */
-+        if (!PCA2131_RtcSet(&g_pca2131Dev, year, month, day, hour, min, sec,
-+            hun, weekday))
++        if (days2date(days, &year, &month, &day, &weekday)
++            && (year <= 2069U))
 +        {
-+            status = SM_ERR_HARDWARE_ERROR;
++            /* Convert year */
++            year %= 100U;
++
++            /* Write RTC */
++            if (!PCA2131_RtcSet(&g_pca2131Dev, year, month, day, hour,
++                min, sec, hun, weekday))
++            {
++                status = SM_ERR_HARDWARE_ERROR;
++            }
++        }
++        else
++        {
++            status = SM_ERR_INVALID_PARAMETERS;
 +        }
 +    }
 +
@@ -2204,7 +2230,7 @@ index 0000000..76a939e
 +            uint32_t days, hours, mins, secs;
 +
 +            /* Convert to seconds */
-+            secs = (uint32_t) val;
++            secs = U64_U32(val);
 +
 +            /* Calculate totals */
 +            mins = secs / 60U;
@@ -2217,29 +2243,31 @@ index 0000000..76a939e
 +            hour = hours % 24U;
 +
 +            /* Convert to date */
-+            days2date((uint32_t) days, &year, &month, &day, &weekday);
-+
-+            /* Convert year */
-+            year %= 100U;
-+
-+            /* Write to RTC */
-+            if (PCA2131_AlarmSet(&g_pca2131Dev, day, hour, min, sec,
-+                weekday))
++            if (days2date(days, &year, &month, &day, &weekday)
++                && (year <= 2069U))
 +            {
-+                /* Enable interrupt */
-+                if (PCA2131_IntEnable(&g_pca2131Dev, true))
++                /* Convert year */
++                year %= 100U;
++
++                /* Write to RTC */
++                if (PCA2131_AlarmSet(&g_pca2131Dev, day, hour, min, sec,
++                    weekday))
 +                {
-+                    /* Enable bus expander interrupt */
-+                    status = BRD_SM_BusExpMaskSet(0U, BIT8(6));
-+                }
-+                else
-+                {
-+                    status = SM_ERR_HARDWARE_ERROR;
++                    /* Enable interrupt */
++                    if (PCA2131_IntEnable(&g_pca2131Dev, true))
++                    {
++                        /* Enable bus expander interrupt */
++                        status = BRD_SM_BusExpMaskSet(0U, BIT8(6));
++                    }
++                    else
++                    {
++                        status = SM_ERR_HARDWARE_ERROR;
++                    }
 +                }
 +            }
 +            else
 +            {
-+                status = SM_ERR_HARDWARE_ERROR;
++                status = SM_ERR_INVALID_PARAMETERS;
 +            }
 +
 +            /* Track if enabled for PCA2131 use */
@@ -2284,48 +2312,170 @@ index 0000000..76a939e
 +/*--------------------------------------------------------------------------*/
 +/* Convert days since 1-1-1970 to date/time                                 */
 +/*--------------------------------------------------------------------------*/
-+static void days2date(uint32_t days, uint32_t *year, uint32_t *month,
++static bool days2date(uint32_t days, uint32_t *year, uint32_t *month,
 +    uint32_t *day, uint32_t *weekday)
 +{
-+    uint32_t newDays;
-+    uint32_t era;
-+    uint32_t doe;
-+    uint32_t yoe;
-+    uint32_t doy;
-+    uint32_t moy;
++    bool rc = true;
++    uint32_t newDays = 0U;
++    uint32_t era = 0U;
++    uint32_t doe = 0U;
++    uint32_t yoe = 0U;
++    uint32_t doy = 0U;
++    uint32_t moy = 0U;
 +
-+    /* Adjust to 1-1-1970) */
-+    newDays = days + 719468U;
++    /* Check days value doesn't wrap */
++    if (days <= (UINT32_MAX - 719468U))
++    {
++        /* Adjust to 1-1-1970) */
++        newDays = days + 719468U;
++    }
++    else
++    {
++        /* Set the return code incase value wraps */
++        rc = false;
++    }
 +
-+    /* Calculate the era */
-+    era = newDays / 146097U;
++    if (rc)
++    {
++        /* Calculate the era */
++        era = newDays / 146097U;
 +
-+    /* Calculate the day in the era */
-+    doe = newDays - (era * 146097U);
++        /* Check the expression doesn't wrap due to negative value */
++        if (newDays >= (era * 146097U))
++        {
++            /* Calculate the day in the era */
++            doe = newDays - (era * 146097U);
++        }
++        else
++        {
++            /* Set the return code if the expression value wraps */
++            rc = false;
++        }
++    }
 +
-+    /* Calculate the year of era */
-+    yoe = (doe - (doe / 1460U) + (doe / 36524U) - (doe / 146096U)) / 365U;
++    if (rc)
++    {
++        /* Check the expression doesn't wrap due to negative value */
++        if (doe >= (doe / 1460U))
++        {
++            /* Calculate the year of era */
++            yoe = (doe - (doe / 1460U) + (doe / 36524U));
 +
-+    /* Calculate year */
-+    *year = yoe + (era * 400U);
++            /* Check the expression doesn't wrap due to negative value */
++            if (yoe >= (doe / 146096U))
++            {
++                yoe -= (doe / 146096U);
++                yoe /= 365U;
++            }
++            else
++            {
++                /* Set the return code if the expression value wraps */
++                rc = false;
++            }
++        }
++        else
++        {
++            /* Set the return code if the expression value wraps */
++            rc = false;
++        }
++    }
 +
-+    /* Calculate day of the year */
-+    doy = doe - ((365U * yoe) + (yoe / 4U) - (yoe / 100U));
++    if (rc)
++    {
++        /* Check the expression doesn't wrap due to negative value */
++        if (yoe <= (UINT32_MAX - (era * 400U)))
++        {
++            /* Calculate year */
++            *year = yoe + (era * 400U);
++        }
++        else
++        {
++            /* Set the return code if the expression value wraps */
++            rc = false;
++        }
++    }
 +
-+    /* Calculate month of year */
-+    moy = ((5U * doy) + 2U) / 153U;
++    if (rc)
++    {
++        /* Check the expression doesn't wrap due to negative value */
++        if (doe >= (365U * yoe))
++        {
++            /* Calculate day of the year */
++            doy = doe - (365U * yoe);
 +
-+    /* Calculate day */
-+    *day = doy - (((153U * moy) + 2U) / 5U) + 1U;
++            /* Check the expression doesn't wrap due to negative  value */
++            if (doy >= (yoe / 4U))
++            {
++                doy -= (yoe / 4U);
++                doy += (yoe / 100U);
++            }
++            else
++            {
++                /* Set the return code if the expression value wraps */
++                rc = false;
++            }
++        }
++        else
++        {
++            /* Set the return code if the expression value wraps */
++            rc = false;
++        }
++    }
 +
-+    /* Calculate month */
-+    *month= (moy < 10U) ? (moy + 3U) : (moy - 9U);
++    if (rc)
++    {
++        /* Check the expression doesn't wrap due to negative value */
++        if (doy <= (UINT32_MAX / 5U))
++        {
++            /* Calculate month of year */
++            moy = ((5U * doy) + 2U) / 153U;
++        }
++        else
++        {
++            /* Set the return code if the expression value wraps */
++            rc = false;
++        }
++    }
 +
-+    /* Calculate day of the week */
-+    *weekday = (days + 4U) % 7U;
 +
-+    /* Adjust year */
-+    *year += (*month <= 2U) ? 1U : 0U;
++    if (rc)
++    {
++        /* Check the expression doesn't wrap due to negative value */
++        if (moy <= ((UINT32_MAX - 2U) / 153U))
++        {
++            /* Calculate day */
++            *day = (((153U * moy) + 2U) / 5U) - 1U;
++            if (doy >= *day)
++            {
++                *day = doy - *day;
++            }
++            else
++            {
++                /* Set the return code if the expression value wraps */
++                rc = false;
++            }
++        }
++        else
++        {
++            /* Set the return code if the expression value wraps */
++            rc = false;
++        }
++    }
++
++    if (rc)
++    {
++        /* Calculate month */
++        *month= (moy < 10U) ? (moy + 3U) : (moy - 9U);
++
++        /* Calculate day of the week */
++        *weekday = (days + 4U) % 7U;
++
++        /* Adjust year */
++        *year += (*month <= 2U) ? 1U : 0U;
++    }
++
++    /* Return code */
++    return rc;
 +}
 +
 +/*--------------------------------------------------------------------------*/
@@ -3144,14 +3294,14 @@ index 0000000..8fa34f1
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_handlers.c b/boards/mcimx95cpl/sm/brd_sm_handlers.c
 new file mode 100755
-index 0000000..f269dbe
+index 0000000..a96f6ce
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_handlers.c
-@@ -0,0 +1,327 @@
+@@ -0,0 +1,372 @@
 +/*
 +** ###################################################################
 +**
-+** Copyright 2023-2024 NXP
++** Copyright 2023-2025 NXP
 +**
 +** Redistribution and use in source and binary forms, with or without modification,
 +** are permitted provided that the following conditions are met:
@@ -3246,6 +3396,26 @@ index 0000000..f269dbe
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +    LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
++    pcal6408a_config_t pcal6408Config;
++
++    /* Fill in PCAL6408A dev */
++    g_pcal6408aDev.i2cBase = s_i2cBases[BOARD_I2C_INSTANCE];
++    g_pcal6408aDev.devAddr = BOARD_PCAL6408A_DEV_ADDR;
++
++    /* Init the bus expander */
++    PCAL6408A_GetDefaultConfig(&pcal6408Config);
++    pcal6408Config.inputLatch = 0xFFU;
++    if (!PCAL6408A_Init(&g_pcal6408aDev, &pcal6408Config))
++    {
++        status = SM_ERR_HARDWARE_ERROR;
++    }
++    else
++    {
++        if (!PCAL6408A_IntMaskSet(&g_pcal6408aDev, PCAL6408A_INITIAL_MASK))
++        {
++            status = SM_ERR_HARDWARE_ERROR;
++        }
++    }
 +
 +    if (status == SM_ERR_SUCCESS)
 +    {
@@ -3254,7 +3424,7 @@ index 0000000..f269dbe
 +        g_pf09Dev.devAddr = BOARD_PF09_DEV_ADDR;
 +        g_pf09Dev.crcEn = true;
 +
-+        /* Inialize PF09 PMIC */
++        /* Initialize PF09 PMIC */
 +        if (!PF09_Init(&g_pf09Dev))
 +        {
 +            status = SM_ERR_HARDWARE_ERROR;
@@ -3310,6 +3480,15 @@ index 0000000..f269dbe
 +            }
 +        }
 +
++        /* Enable the LDO3 in RUN mode */
++        if (status == SM_ERR_SUCCESS)
++        {
++            if (!PF09_PmicWrite(&g_pf09Dev, 0x7DU, 0x20U, 0xFFU))
++            {
++                status = SM_ERR_HARDWARE_ERROR;
++            }
++        }
++
 +        /* Set the OV debounce to 50us due to errata ER011/12 */
 +        if (status == SM_ERR_SUCCESS)
 +        {
@@ -3341,7 +3520,7 @@ index 0000000..f269dbe
 +        g_pf5301Dev.i2cBase = s_i2cBases[BOARD_I2C_INSTANCE];
 +        g_pf5301Dev.devAddr = BOARD_PF5301_DEV_ADDR;
 +
-+        /* Inialize PF0901 PMIC */
++        /* Initialize PF5301 PMIC */
 +        if (!PF53_Init(&g_pf5301Dev))
 +        {
 +            status = SM_ERR_HARDWARE_ERROR;
@@ -3355,7 +3534,7 @@ index 0000000..f269dbe
 +        g_pf5302Dev.i2cBase = s_i2cBases[BOARD_I2C_INSTANCE];
 +        g_pf5302Dev.devAddr = BOARD_PF5302_DEV_ADDR;
 +
-+        /* Inialize PF0901 PMIC */
++        /* Initialize PF5302 PMIC */
 +        if (!PF53_Init(&g_pf5302Dev))
 +        {
 +            status = SM_ERR_HARDWARE_ERROR;
@@ -3368,11 +3547,25 @@ index 0000000..f269dbe
 +        g_pca2131Dev.i2cBase = s_i2cBases[BOARD_I2C_INSTANCE];
 +        g_pca2131Dev.devAddr = BOARD_PCA2131_DEV_ADDR;
 +
-+        /* Inialize PCA2131 RTC */
++        /* Initialize PCA2131 RTC */
 +        if (!PCA2131_Init(&g_pca2131Dev))
 +        {
 +            status = SM_ERR_HARDWARE_ERROR;
 +        }
++    }
++
++    if (status == SM_ERR_SUCCESS)
++    {
++        rgpio_pin_config_t gpioConfig =
++        {
++            kRGPIO_DigitalInput,
++            0U
++        };
++
++        /* Init GPIO1-10 */
++        RGPIO_PinInit(GPIO1, 10U, &gpioConfig);
++        RGPIO_SetPinInterruptConfig(GPIO1, 10U, kRGPIO_InterruptOutput0,
++            kRGPIO_InterruptLogicZero);
 +    }
 +
 +    /* Return status */
@@ -3386,7 +3579,9 @@ index 0000000..f269dbe
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +    static uint8_t cachedMask = PCAL6408A_INITIAL_MASK;
-+    uint8_t newMask = (cachedMask & ~mask) | val;
++    uint8_t newMask = (cachedMask & ~mask);
++
++    newMask |= val;
 +
 +    /* Mask changed? */
 +    if (cachedMask != newMask)
@@ -3612,14 +3807,14 @@ index 0000000..64f0c93
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_sensor.c b/boards/mcimx95cpl/sm/brd_sm_sensor.c
 new file mode 100755
-index 0000000..c6cf6bb
+index 0000000..92e4154
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_sensor.c
-@@ -0,0 +1,367 @@
+@@ -0,0 +1,375 @@
 +/*
 +** ###################################################################
 +**
-+** Copyright 2023-2024 NXP
++** Copyright 2023-2025 NXP
 +**
 +** Redistribution and use in source and binary forms, with or without modification,
 +** are permitted provided that the following conditions are met:
@@ -3687,7 +3882,7 @@ index 0000000..c6cf6bb
 +    /* Get max string width */
 +    DEV_SM_MaxStringGet(len, &s_maxLen, s_name, BRD_SM_NUM_SENSOR);
 +
-+    /* Check to see if sensorId is within bounds*/
++    /* Check to see if sensorId is within bounds */
 +    if (sensorId < SM_NUM_SENSOR)
 +    {
 +        /* Check if device or board */
@@ -3720,7 +3915,7 @@ index 0000000..c6cf6bb
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +
-+    /* Check to see if sensorId is within bounds*/
++    /* Check to see if sensorId is within bounds */
 +    if (sensorId < SM_NUM_SENSOR)
 +    {
 +        /* Check if device or board */
@@ -3760,7 +3955,7 @@ index 0000000..c6cf6bb
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +
-+    /* Check to see if sensorId is within bounds*/
++    /* Check to see if sensorId is within bounds */
 +    if (sensorId < SM_NUM_SENSOR)
 +    {
 +        /* Check if device or board */
@@ -3826,7 +4021,7 @@ index 0000000..c6cf6bb
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +
-+    /* Check to see if sensorId is within bounds*/
++    /* Check to see if sensorId is within bounds */
 +    if (sensorId < SM_NUM_SENSOR)
 +    {
 +        /* Check if device or board */
@@ -3855,11 +4050,19 @@ index 0000000..c6cf6bb
 +                    }
 +                    else if (eventControl == DEV_SM_SENSOR_TP_RISING)
 +                    {
-+                        int32_t temp = (int32_t) value;
-+
-+                        if (!PF09_TempAlarmSet(&g_pf09Dev, temp))
++                        /* Check value is within int32_t range */
++                        if (CHECK_I64_FIT_I32(value))
 +                        {
-+                            status = SM_ERR_HARDWARE_ERROR;
++                            int32_t temp = (int32_t) value;
++
++                            if (!PF09_TempAlarmSet(&g_pf09Dev, temp))
++                            {
++                                status = SM_ERR_HARDWARE_ERROR;
++                            }
++                        }
++                        else
++                        {
++                            status = SM_ERR_INVALID_PARAMETERS;
 +                        }
 +                    }
 +                    else
@@ -3895,7 +4098,7 @@ index 0000000..c6cf6bb
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +
-+    /* Check to see if sensorId is within bounds*/
++    /* Check to see if sensorId is within bounds */
 +    if (sensorId < SM_NUM_SENSOR)
 +    {
 +        /* Check if device or board */
@@ -3947,7 +4150,7 @@ index 0000000..c6cf6bb
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +
-+    /* Check to see if sensorId is within bounds*/
++    /* Check to see if sensorId is within bounds */
 +    if (sensorId < SM_NUM_SENSOR)
 +    {
 +        uint32_t brdSensorId = sensorId - DEV_SM_NUM_SENSOR;
@@ -4201,14 +4404,14 @@ index 0000000..9ea3999
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_voltage.c b/boards/mcimx95cpl/sm/brd_sm_voltage.c
 new file mode 100755
-index 0000000..df36e54
+index 0000000..b81ffd9
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_voltage.c
-@@ -0,0 +1,517 @@
+@@ -0,0 +1,565 @@
 +/*
 +** ###################################################################
 +**
-+**     Copyright 2023-2024 NXP
++**     Copyright 2023-2025 NXP
 +**
 +**     Redistribution and use in source and binary forms, with or without modification,
 +**     are permitted provided that the following conditions are met:
@@ -4353,10 +4556,21 @@ index 0000000..df36e54
 +    /* Return results */
 +    if ((status != SM_ERR_SUCCESS) && rc)
 +    {
-+        range->highestVolt = (int32_t) info.maxV;
-+        range->lowestVolt = (int32_t) info.minV;
-+        range->stepSize= (int32_t) info.stepV;
-+        status = SM_ERR_SUCCESS;
++        /* Validate the parameters values are with in int32 range */
++        if (CHECK_U32_FIT_I32(info.maxV) &&
++            CHECK_U32_FIT_I32(info.minV) &&
++            CHECK_U32_FIT_I32(info.stepV))
++        {
++            range->highestVolt = (int32_t) info.maxV;
++            range->lowestVolt = (int32_t) info.minV;
++            range->stepSize = (int32_t) info.stepV;
++            status = SM_ERR_SUCCESS;
++        }
++        else
++        {
++            /* Set the status if parameters are out of range */
++            status = SM_ERR_INVALID_PARAMETERS;
++        }
 +    }
 +
 +    /* Return status */
@@ -4527,67 +4741,77 @@ index 0000000..df36e54
 +int32_t BRD_SM_VoltageLevelSet(uint32_t domainId, int32_t voltageLevel)
 +{
 +    int32_t status = SM_ERR_SUCCESS;
-+    bool rc;
-+    uint32_t level = (uint32_t) voltageLevel;
 +
-+    /* Set level */
-+    switch (domainId)
++    /* Check voltageLevel is positive */
++    if (CHECK_I32_POSITIVE(voltageLevel))
 +    {
-+        case DEV_SM_VOLT_SOC:
-+            rc = PF53_VoltageSet(&g_pf5302Dev, PF53_REG_SW1, PF53_STATE_VRUN,
-+                level);
++        bool rc;
++        uint32_t level = (uint32_t) voltageLevel;
 +
-+            if (rc)
-+            {
++        /* Set level */
++        switch (domainId)
++        {
++            case DEV_SM_VOLT_SOC:
++                rc = PF53_VoltageSet(&g_pf5302Dev, PF53_REG_SW1, PF53_STATE_VRUN,
++                    level);
++
++                if (rc)
++                {
++                    /* Save level to restore */
++                    s_levelSoc = (int32_t) level;
++                }
++                break;
++            case DEV_SM_VOLT_ARM:
++                (void) PF53_VoltageSet(&g_pf5301Dev, PF53_REG_SW1, PF53_STATE_VRUN,
++                    level);
++
 +                /* Save level to restore */
-+                s_levelSoc = (int32_t) level;
-+            }
-+            break;
-+        case DEV_SM_VOLT_ARM:
-+            (void) PF53_VoltageSet(&g_pf5301Dev, PF53_REG_SW1, PF53_STATE_VRUN,
-+                level);
++                s_levelArm = (int32_t) level;
++                rc = true;
++                break;
++            case BRD_SM_VOLT_VDD_GPIO_3P3:
++                rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW1, PF09_STATE_VRUN,
++                    level);
++                break;
++            case BRD_SM_VOLT_VDD_ANA_0P8:
++                rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW2, PF09_STATE_VRUN,
++                    level);
++                break;
++            case BRD_SM_VOLT_VDD_GPIO_1P8:
++                rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW3, PF09_STATE_VRUN,
++                    level);
++                break;
++            case BRD_SM_VOLT_VDDQ_DDR:
++                rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW4, PF09_STATE_VRUN,
++                    level);
++                break;
++            case BRD_SM_VOLT_VDD2_DDR:
++                rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW5, PF09_STATE_VRUN,
++                    level);
++                break;
++            case BRD_SM_VOLT_SD_CARD:
++                rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_LDO1, PF09_STATE_VRUN,
++                    level);
++                break;
++            case BRD_SM_VOLT_NVCC_SD2:
++                rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_LDO2, PF09_STATE_VRUN,
++                    level);
++                break;
++            default:
++                status = SM_ERR_NOT_FOUND;
++                break;
++        }
 +
-+            /* Save level to restore */
-+            s_levelArm = (int32_t) level;
-+            rc = true;
-+            break;
-+        case BRD_SM_VOLT_VDD_GPIO_3P3:
-+            rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW1, PF09_STATE_VRUN,
-+                level);
-+            break;
-+        case BRD_SM_VOLT_VDD_ANA_0P8:
-+            rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW2, PF09_STATE_VRUN,
-+                level);
-+            break;
-+        case BRD_SM_VOLT_VDD_GPIO_1P8:
-+            rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW3, PF09_STATE_VRUN,
-+                level);
-+            break;
-+        case BRD_SM_VOLT_VDDQ_DDR:
-+            rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW4, PF09_STATE_VRUN,
-+                level);
-+            break;
-+        case BRD_SM_VOLT_VDD2_DDR:
-+            rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_SW5, PF09_STATE_VRUN,
-+                level);
-+            break;
-+        case BRD_SM_VOLT_SD_CARD:
-+            rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_LDO1, PF09_STATE_VRUN,
-+                level);
-+            break;
-+        case BRD_SM_VOLT_NVCC_SD2:
-+            rc = PF09_VoltageSet(&g_pf09Dev, PF09_REG_LDO2, PF09_STATE_VRUN,
-+                level);
-+            break;
-+        default:
-+            status = SM_ERR_NOT_FOUND;
-+            break;
++        /* Translate error */
++        if ((status == SM_ERR_SUCCESS) && !rc)
++        {
++            status = SM_ERR_HARDWARE_ERROR;
++        }
 +    }
-+
-+    /* Translate error */
-+    if ((status == SM_ERR_SUCCESS) && !rc)
++    else
 +    {
-+        status = SM_ERR_HARDWARE_ERROR;
++        /* Set the status if voltageLevel is negative */
++        status = SM_ERR_INVALID_PARAMETERS;
 +    }
 +
 +    /* Return status */
@@ -4601,7 +4825,7 @@ index 0000000..df36e54
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +    bool rc;
-+    uint32_t level;
++    uint32_t level = 0U;
 +
 +    /* Get level */
 +    switch (domainId)
@@ -4615,14 +4839,33 @@ index 0000000..df36e54
 +                &level);
 +            if (rc)
 +            {
-+                /* Save level to restore */
-+                s_levelArm = (int32_t) level;
++                /* Check level is within int32_t range */
++                if (CHECK_U32_FIT_I32(level))
++                {
++                    /* Save level to restore */
++                    s_levelArm = (int32_t) level;
++                }
++                else
++                {
++                    /* Set status if level is not within int32_t range */
++                    status = SM_ERR_INVALID_PARAMETERS;
++                }
 +            }
 +            else
 +            {
-+                /* Return saved level */
-+                level = (uint32_t) s_levelArm;
-+                rc = true;
++                /* Check s_levelArm has positive value */
++                if (CHECK_I32_POSITIVE(s_levelArm))
++                {
++                    /* Return saved level */
++                    level = (uint32_t) s_levelArm;
++                    rc = true;
++                }
++                else
++                {
++                    /* Set the status if s_levelArm is negative */
++                    status = SM_ERR_INVALID_PARAMETERS;
++                    rc = false;
++                }
 +            }
 +            break;
 +        case BRD_SM_VOLT_VDD_GPIO_3P3:
@@ -4661,7 +4904,15 @@ index 0000000..df36e54
 +    /* Return result */
 +    if ((status == SM_ERR_SUCCESS) && rc)
 +    {
-+        *voltageLevel = (int32_t) level;
++        /* Check level value within int32_t range */
++        if (CHECK_U32_FIT_I32(level))
++        {
++            *voltageLevel = (int32_t) level;
++        }
++        else
++        {
++            status = SM_ERR_INVALID_PARAMETERS;
++        }
 +    }
 +
 +    /* Translate error */
@@ -4940,1003 +5191,6 @@ index 0000000..9b16236
 +#endif /* BRD_SM_VOLTAGE_H */
 +
 +/** @} */
-+
-diff --git a/configs/mx95cpl.cfg b/configs/mx95cpl.cfg
-new file mode 100755
-index 0000000..8c61288
---- /dev/null
-+++ b/configs/mx95cpl.cfg
-@@ -0,0 +1,991 @@
-+## ###################################################################
-+##
-+## Copyright 2023-2024 NXP
-+##
-+## Redistribution and use in source and binary forms, with or without modification,
-+## are permitted provided that the following conditions are met:
-+##
-+## o Redistributions of source code must retain the above copyright notice, this list
-+##   of conditions and the following disclaimer.
-+##
-+## o Redistributions in binary form must reproduce the above copyright notice, this
-+##   list of conditions and the following disclaimer in the documentation and/or
-+##   other materials provided with the distribution.
-+##
-+## o Neither the name of the copyright holder nor the names of its
-+##   contributors may be used to endorse or promote products derived from this
-+##   software without specific prior written permission.
-+##
-+## THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-+## ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+## WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+## DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-+## ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+## (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+## LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-+## ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+## SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+##
-+##
-+## ###################################################################
-+
-+# SM configuration file for the MX95 CompuLab SOM
-+
-+MAKE    soc=MIMX95, board=mcimx95cpl, build=gcc_cross
-+DOX     name=MX95CPL, desc="i.MX95 CompuLab Configuration Data"
-+
-+include ../devices/MIMX95/configtool/device.cfg
-+
-+#==========================================================================#
-+# Board                                                                    #
-+#==========================================================================#
-+
-+BOARD               DEBUG_UART_INSTANCE=2
-+BOARD               DEBUG_UART_BAUDRATE=115200
-+
-+BOARD               I2C_INSTANCE=1
-+BOARD               I2C_BAUDRATE=400000
-+
-+#==========================================================================#
-+# Common Defines                                                           #
-+#==========================================================================#
-+
-+NOTIFY:             api=notify
-+GET:                api=get
-+SET:                api=set
-+PRIV:               api=priv
-+ALL:                api=all
-+READONLY:           perm=ro
-+
-+#==========================================================================#
-+# ELE Domain                                                               #
-+#==========================================================================#
-+
-+DOM0                did=0
-+
-+DATA:               perm=rw
-+
-+# Resources
-+
-+# Memory
-+
-+M33_TCM_SYS         DATA, begin=0x020200000, size=256K
-+OCRAM               DATA, begin=0x020480000, size=352K
-+DDR                 DATA, begin=0x080000000, end=0x87FFFFFFF
-+
-+#==========================================================================#
-+# ISP Domain                                                               #
-+#==========================================================================#
-+
-+DOM10               did=10
-+
-+OWNER:              perm=rw
-+
-+#==========================================================================#
-+# V2X Domain                                                               #
-+#==========================================================================#
-+
-+DOM12               did=12
-+
-+DFMT1:              sa=bypass, pa=bypass
-+OWNER:
-+
-+V2X_FH              OWNER
-+
-+#==========================================================================#
-+# SM M33 EENV                                                              #
-+#==========================================================================#
-+
-+LM0                 name="SM", rpc=none, boot=1, did=2, safe=feenv
-+
-+DFMT0:              sa=secure
-+DFMT1:              sa=secure, pa=privileged
-+OWNER:              perm=sec_rw, api=all
-+ACCESS:             perm=sec_rw, api=all, mdid=none
-+TEST_MU:            perm=sec_rw
-+
-+EXEC:               perm=sec_rwx
-+DATA:               perm=sec_rw
-+
-+MODE                msel=1, boot=1
-+MODE                msel=2, boot=1
-+
-+# API
-+
-+# Modified via PERF protocol
-+CLK_A55MTRBUS            ALL
-+CLK_ADC                  ALL
-+CLK_BUSAON               ALL
-+CLK_BUSM7                ALL
-+CLK_BUSNETCMIX           ALL
-+CLK_BUSWAKEUP            ALL
-+CLK_CAMAPB               ALL
-+CLK_CAMAXI               ALL
-+CLK_CAMCM0               ALL
-+CLK_CAMISI               ALL
-+CLK_DISPAPB              ALL
-+CLK_DISPAXI              ALL
-+CLK_ELE                  ALL
-+CLK_ENET                 ALL
-+CLK_ENETPHYTEST200M      ALL
-+CLK_ENETPHYTEST500M      ALL
-+CLK_ENETPHYTEST667M      ALL
-+CLK_FRO                  ALL
-+CLK_GPU                  ALL
-+CLK_GPUAPB               ALL
-+CLK_HSIO                 ALL
-+CLK_HSIOACSCAN480M       ALL
-+CLK_HSIOACSCAN80M        ALL
-+CLK_HSIOPCIETEST160M     ALL
-+CLK_HSIOPCIETEST400M     ALL
-+CLK_HSIOPCIETEST500M     ALL
-+CLK_HSIOUSBTEST50M       ALL
-+CLK_HSIOUSBTEST60M       ALL
-+CLK_NOC                  ALL
-+CLK_NOCAPB               ALL
-+CLK_NPU                  ALL
-+CLK_NPUAPB               ALL
-+CLK_OSC24M               ALL
-+CLK_OSC32K               ALL
-+CLK_SYSPLL1_PFD0         ALL
-+CLK_SYSPLL1_PFD0_DIV2    ALL
-+CLK_SYSPLL1_PFD0_UNGATED ALL
-+CLK_SYSPLL1_PFD1         ALL
-+CLK_SYSPLL1_PFD1_DIV2    ALL
-+CLK_SYSPLL1_PFD1_UNGATED ALL
-+CLK_SYSPLL1_PFD2         ALL
-+CLK_SYSPLL1_PFD2_DIV2    ALL
-+CLK_SYSPLL1_PFD2_UNGATED ALL
-+CLK_SYSPLL1_VCO          ALL
-+CLK_TEMPSENSE_GPR_SEL    ALL
-+CLK_TMU                  ALL
-+CLK_V2XPK                ALL
-+CLK_VPU                  ALL
-+CLK_VPUAPB               ALL
-+CLK_VPUJPEG              ALL
-+CLK_WAKEUPAXI            ALL
-+
-+# Resources
-+
-+M33P                OWNER  # CPUs must be first
-+ANATOP              OWNER
-+ATU_A               OWNER
-+ATU_M               OWNER
-+AXBS_AON            OWNER
-+BBNSM               OWNER
-+BLK_CTRL_BBSMMIX    OWNER
-+BLK_CTRL_DDRMIX     OWNER
-+BLK_CTRL_NOCMIX     OWNER
-+BLK_CTRL_NS_AONMIX  OWNER
-+BLK_CTRL_S_AONMIX   OWNER
-+BLK_CTRL_WAKEUPMIX  OWNER
-+CCM                 OWNER
-+DAP                 OWNER
-+DDR_CTRL            OWNER
-+DDR_PHY             OWNER
-+DDR_PM              OWNER
-+DRAM_PLL            OWNER
-+ELE                 OWNER
-+FSB                 READONLY
-+GIC                 ACCESS
-+GPC                 OWNER
-+GPIO1               OWNER
-+GPR0                OWNER
-+GPR1                OWNER
-+GPR2                OWNER
-+GPR3                OWNER
-+GPV_CAMERA          OWNER
-+GPV_CENTRAL         OWNER
-+GPV_DISPLAY         OWNER
-+GPV_HSIO            OWNER
-+GPV_MAIN            OWNER
-+GPV_MEGA            OWNER
-+GPV_VPU             OWNER
-+IOMUXC              OWNER
-+IOMUX_GPR           OWNER
-+JTAG                OWNER
-+LPI2C1              OWNER
-+LPUART2             OWNER
-+M33_CACHE_CTRL      OWNER
-+M33_PCF             OWNER
-+M33_PSF             OWNER
-+M33_TCM_ECC         OWNER
-+MU1_A               TEST_MU
-+MU1_B               OWNER
-+MU2_A               TEST_MU
-+MU2_B               OWNER
-+MU3_A               TEST_MU
-+MU3_B               OWNER
-+MU4_A               TEST_MU
-+MU4_B               OWNER
-+MU5_A               TEST_MU
-+MU5_B               OWNER
-+MU6_A               TEST_MU
-+MU6_B               OWNER
-+MU_ELE0             OWNER
-+ROMCP_M33           OWNER
-+SRAM_CTL_1          OWNER
-+SRAM_CTL_N          OWNER
-+SRC                 OWNER
-+SYSCTR_CTL          OWNER
-+SYSCTR_RD           OWNER
-+TEMP_A55            OWNER
-+TRDC_A              OWNER
-+TRDC_C              OWNER
-+TRDC_D              OWNER
-+TRDC_E              OWNER
-+TRDC_G              OWNER
-+TRDC_H              OWNER
-+TRDC_M              OWNER
-+TRDC_N              OWNER
-+TRDC_V              OWNER
-+TRDC_W              OWNER
-+TSTMR1              OWNER
-+WDOG1               OWNER
-+WDOG2               OWNER
-+
-+# SAF
-+
-+CMU_A1              OWNER
-+CMU_A2              OWNER
-+CMU_ANA             OWNER
-+CMU_DDR1            OWNER
-+CMU_DDR2            OWNER
-+CMU_N1              OWNER
-+CMU_N2              OWNER
-+CMU_W1              OWNER
-+CMU_W2              OWNER
-+CRC_A               OWNER
-+C_STCU              OWNER
-+DMA_CRC             OWNER
-+EIM_A               OWNER
-+EIM_N               OWNER
-+EIM_NPU             OWNER
-+EIM_W               OWNER
-+ERM_A               OWNER
-+ERM_NPU             OWNER
-+ERM_W               OWNER
-+FCCU                OWNER
-+FCCU_FHID           OWNER
-+INTM                OWNER
-+L_STCU_A            OWNER
-+L_STCU_DDR          OWNER
-+L_STCU_N            OWNER
-+L_STCU_NPUMIX       OWNER
-+
-+# Pins
-+
-+PIN_FCCU_ERR0         OWNER
-+PIN_I2C1_SCL          OWNER
-+PIN_I2C1_SDA          OWNER
-+PIN_PDM_BIT_STREAM1   OWNER
-+PIN_UART2_RXD         OWNER
-+PIN_UART2_TXD         OWNER
-+PIN_WDOG_ANY          OWNER
-+
-+# Memory
-+
-+M33_ROM             EXEC, begin=0x000000000, end=0x00003FFFF
-+M33_TCM_CODE        EXEC, begin=0x0201C0000, size=256K
-+M33_TCM_SYS         EXEC, begin=0x020200000, size=256K
-+M7MIX               DATA, begin=0x04A050000, end=0x04A0AFFFF
-+
-+# Faults
-+
-+FAULT_SW3           OWNER, reaction=grp_reset
-+FAULT_SW4           OWNER, reaction=sys_reset
-+
-+#==========================================================================#
-+# M7 EENV                                                                  #
-+#==========================================================================#
-+
-+LM1                 name="M7", rpc=scmi, boot=2, skip=1, did=4, safe=seenv
-+
-+DFMT0:              sa=secure
-+DFMT1:              sa=secure, pa=privileged
-+OWNER:              perm=rw, api=all
-+
-+EXEC:               perm=full
-+DATA:               perm=rw
-+
-+# Start/Stop (mSel=0)
-+
-+PD_M7               stop=2
-+CPU_M7P             start=1, stop=1
-+
-+# Start/Stop (mSel=1)
-+
-+MODE                msel=1, boot=2
-+
-+PD_M7               msel=1, stop=2
-+CPU_M7P             msel=1, start=1, stop=1
-+
-+# Start/Stop (mSel=2)
-+
-+PD_M7               msel=2, stop=2
-+CPU_M7P             msel=2, start=1, stop=1
-+
-+# RPC Interface
-+
-+SCMI_AGENT0         name="M7"
-+MAILBOX             type=mu, mu=9, test=8, priority=high
-+CHANNEL             db=0, xport=smt, check=crc32, rpc=scmi, type=a2p, \
-+                    test=default
-+CHANNEL             db=1, xport=smt, check=crc32, rpc=scmi, \
-+                    type=p2a_notify, notify=24
-+CHANNEL             db=2, xport=smt, check=crc32, rpc=scmi, \
-+                    type=p2a_priority
-+
-+# API
-+
-+BRD_SM_CTRL_BUTTON        NOTIFY
-+BRD_SM_CTRL_PCA2131       ALL
-+BRD_SM_CTRL_TEST          ALL
-+BRD_SM_RTC_PCA2131        ALL
-+BRD_SM_SENSOR_TEMP_PF09   SET
-+BRD_SM_SENSOR_TEMP_PF5301 SET
-+BRD_SM_SENSOR_TEMP_PF5302 SET
-+BUTTON                    NOTIFY
-+FUSA                      ALL
-+LMM_2                     ALL
-+PERLPI_LPUART3            ALL
-+RTC                       PRIV
-+SENSOR_TEMP_ANA           ALL, test
-+SYS                       ALL
-+
-+# Resources
-+
-+M7P                 OWNER  # CPUs must be first
-+CAN_FD1             OWNER
-+FSB                 READONLY
-+IRQSTEER_M7         OWNER
-+LPIT1               OWNER
-+LPTMR1              OWNER
-+LPTMR2              OWNER
-+LPTPM1              OWNER
-+LPUART3             OWNER, test
-+MSGINTR1            OWNER
-+MSGINTR2            OWNER
-+MU5_A               OWNER
-+MU7_B               OWNER
-+MU8_B               OWNER
-+MU_ELE5             OWNER
-+PD_M7               test
-+SYSCTR_RD           READONLY
-+TSTMR2              OWNER
-+V2X_SHE1            OWNER
-+WDOG5               OWNER
-+
-+# Pins
-+
-+PIN_GPIO_IO14       OWNER
-+PIN_GPIO_IO15       OWNER
-+
-+# Memory
-+
-+M7MIX               DATA, begin=0x020380000, end=0x02047FFFF
-+M7MIX               DATA, begin=0x04A060000, end=0x04A09FFFF
-+DDR                 EXEC, begin=0x080000000, end=0x089FFFFFF
-+
-+# Faults
-+
-+FAULT_M7_LOCKUP     OWNER, reaction=lm_reset
-+FAULT_M7_RESET      OWNER, reaction=lm_reset
-+FAULT_SW0           OWNER, reaction=fusa
-+FAULT_SW1           OWNER, reaction=lm_reset
-+FAULT_WDOG5         OWNER, reaction=lm_reset
-+
-+#==========================================================================#
-+# A55 secure EENV                                                          #
-+#==========================================================================#
-+
-+LM2                 name="AP", rpc=scmi, boot=3, skip=1, did=3, default
-+
-+DFMT0:              sa=bypass
-+DFMT1:              sa=secure, pa=privileged
-+OWNER:              perm=sec_rw, api=all
-+
-+EXEC:               perm=sec_rwx
-+DATA:               perm=rw
-+
-+# Start/Stop (mSel=0)
-+
-+VOLT_ARM            start=1|1, stop=9
-+PD_A55P             start=2, stop=8, test
-+PD_A55C0            stop=7
-+PD_A55C1            stop=6
-+PD_A55C2            stop=5
-+PD_A55C3            stop=4
-+PD_A55C4            stop=3
-+PD_A55C5            stop=2
-+PERF_A55            start=3|3
-+CPU_A55C0           start=4
-+CPU_A55P            stop=1
-+
-+# Start/Stop (mSel=1)
-+
-+VOLT_ARM            msel=1, start=1|1, stop=9
-+PD_A55P             msel=1, start=2, stop=8
-+PD_A55C0            msel=1, stop=7
-+PD_A55C1            msel=1, stop=6
-+PD_A55C2            msel=1, stop=5
-+PD_A55C3            msel=1, stop=4
-+PD_A55C4            msel=1, stop=3
-+PD_A55C5            msel=1, stop=2
-+PERF_A55            msel=1, start=3|3
-+CPU_A55C0           msel=1, start=4
-+CPU_A55P            msel=1, stop=1
-+
-+# Start/Stop (mSel=2)
-+
-+VOLT_ARM            msel=2, start=1|1, stop=9
-+PD_A55P             msel=2, start=2, stop=8
-+PD_A55C0            msel=2, stop=7
-+PD_A55C1            msel=2, stop=6
-+PD_A55C2            msel=2, stop=5
-+PD_A55C3            msel=2, stop=4
-+PD_A55C4            msel=2, stop=3
-+PD_A55C5            msel=2, stop=2
-+PERF_A55            msel=2, start=3|3
-+CPU_A55C0           msel=2, start=4
-+CPU_A55P            msel=2, stop=1
-+
-+# RPC Interface
-+
-+SCMI_AGENT1         name="AP-S", secure
-+MAILBOX             type=mu, mu=1, test=0
-+CHANNEL             db=0, xport=smt, rpc=scmi, type=a2p
-+CHANNEL             db=1, xport=smt, rpc=scmi, type=p2a_notify, notify=24
-+
-+# API
-+
-+PERF_A55            ALL
-+PERF_DRAM           ALL
-+PERLPI_CAN2         ALL
-+PERLPI_CAN3         ALL
-+PERLPI_CAN4         ALL
-+PERLPI_CAN5         ALL
-+PERLPI_GPIO2        ALL
-+PERLPI_GPIO3        ALL
-+PERLPI_GPIO4        ALL
-+PERLPI_GPIO5        ALL
-+PERLPI_LPUART1      ALL
-+PERLPI_LPUART4      ALL
-+PERLPI_LPUART5      ALL
-+PERLPI_LPUART6      ALL
-+PERLPI_LPUART7      ALL
-+PERLPI_LPUART8      ALL
-+PERLPI_WDOG3        ALL
-+PERLPI_WDOG4        ALL
-+SYS                 ALL
-+
-+# Resources
-+
-+A55C0               OWNER  # CPUs must be first
-+A55C1               OWNER  # CPUs must be first
-+A55C2               OWNER  # CPUs must be first
-+A55C3               OWNER  # CPUs must be first
-+A55C4               OWNER  # CPUs must be first
-+A55C5               OWNER  # CPUs must be first
-+A55P                OWNER, sema=0x442313F8
-+ARM_PLL             OWNER
-+MU1_A               OWNER
-+MU_ELE1             OWNER
-+MU_ELE2             OWNER
-+
-+# Pins
-+
-+# Memory
-+
-+OCRAM               EXEC, begin=0x020480000, size=256K
-+DDR                 EXEC, begin=0x08A000000, end=0x08DFFFFFF
-+
-+# Faults
-+
-+FAULT_SW2           OWNER, reaction=lm_reset
-+FAULT_WDOG3         OWNER, reaction=lm_reset
-+FAULT_WDOG4         OWNER, reaction=lm_reset
-+
-+#==========================================================================#
-+# A55 non-secure EENV                                                      #
-+#==========================================================================#
-+
-+DFMT0:              sa=nonsecure
-+DFMT1:              sa=nonsecure, pa=privileged
-+
-+OWNER:              perm=rw, api=all
-+ACCESS:             perm=rw, api=all, mdid=none
-+
-+EXEC:               perm=full
-+DATA:               perm=rw
-+
-+# RPC Interface
-+
-+SCMI_AGENT2         name="AP-NS"
-+MAILBOX             type=mu, mu=3, test=2
-+CHANNEL             db=0, xport=smt, rpc=scmi, type=a2p
-+CHANNEL             db=1, xport=smt, rpc=scmi, type=p2a_notify
-+
-+# API
-+
-+AUDIO_PLL1                ALL
-+AUDIO_PLL2                ALL
-+BRD_SM_CTRL_BT_WAKE       NOTIFY
-+BRD_SM_CTRL_BUTTON        NOTIFY
-+BRD_SM_CTRL_PCIE1_WAKE    NOTIFY
-+BRD_SM_CTRL_PCIE2_WAKE    NOTIFY
-+BRD_SM_CTRL_SD3_WAKE      NOTIFY
-+BRD_SM_RTC_PCA2131        PRIV
-+BRD_SM_SENSOR_TEMP_PF09   ALL
-+BRD_SM_SENSOR_TEMP_PF5301 SET
-+BRD_SM_SENSOR_TEMP_PF5302 SET
-+BUTTON                    ALL, test
-+CLOCK_DISP1PIX            ALL
-+CLOCK_DISP2PIX            ALL
-+CLOCK_DISP3PIX            ALL
-+CLOCK_EXT                 ALL
-+CLOCK_EXT1                ALL
-+CLOCK_EXT2                ALL
-+CLOCK_HSIOPCIEAUX         ALL
-+CLOCK_OUT1                ALL
-+CLOCK_OUT2                ALL
-+CLOCK_OUT3                ALL
-+CLOCK_OUT4                ALL
-+CLOCK_USBPHYBURUNIN       ALL
-+CLOCK_VPUDSP              ALL
-+HSIO_PLL                  ALL
-+LDB_PLL                   ALL
-+LMM_1                     NOTIFY
-+PERF_A55                  ALL
-+PERF_DRAM                 ALL
-+RTC                       ALL, test
-+SENSOR_TEMP_A55           ALL
-+SENSOR_TEMP_ANA           SET
-+SYS                       NOTIFY
-+
-+# Resources
-+
-+ADC                 OWNER
-+BLK_CTRL_CAMERAMIX  OWNER
-+BLK_CTRL_DISPLAYMIX OWNER
-+BLK_CTRL_GPUMIX     OWNER
-+BLK_CTRL_HSIOMIX    OWNER
-+BLK_CTRL_NETCMIX    OWNER
-+BLK_CTRL_NPUMIX     OWNER
-+BLK_CTRL_VPUMIX     OWNER
-+CAMERA1             OWNER
-+CAMERA2             OWNER
-+CAMERA3             OWNER
-+CAMERA4             OWNER
-+CAMERA5             OWNER
-+CAMERA6             OWNER
-+CAMERA7             OWNER
-+CAMERA8             OWNER
-+CAN_FD2             OWNER
-+CAN_FD3             OWNER
-+CAN_FD4             OWNER
-+CAN_FD5             OWNER
-+DC                  OWNER, test
-+DC0                 OWNER
-+DC1                 OWNER
-+DC_2DBLIT           OWNER
-+DC_BLITINT          OWNER
-+DC_CMDSEQ           OWNER
-+DC_DISPENG          OWNER
-+DC_DISPENG_INT      OWNER
-+DC_FL0              OWNER
-+DC_FL1              OWNER
-+DC_INT_CTL          OWNER
-+DC_PIXENGINE        OWNER
-+DC_XPC              OWNER
-+DC_YUV0             OWNER
-+DC_YUV1             OWNER
-+DC_YUV2             OWNER
-+DC_YUV3             OWNER
-+DDR_PM              ACCESS
-+EDMA1_MP            OWNER
-+EDMA1_CH0           OWNER
-+EDMA1_CH1           OWNER
-+EDMA1_CH2           OWNER
-+EDMA1_CH3           OWNER
-+EDMA1_CH4           OWNER
-+EDMA1_CH5           OWNER
-+EDMA1_CH6           OWNER
-+EDMA1_CH7           OWNER
-+EDMA1_CH8           OWNER
-+EDMA1_CH9           OWNER
-+EDMA1_CH10          OWNER
-+EDMA1_CH11          OWNER
-+EDMA1_CH12          OWNER
-+EDMA1_CH13          OWNER
-+EDMA1_CH14          OWNER
-+EDMA1_CH15          OWNER
-+EDMA1_CH16          OWNER
-+EDMA1_CH17          OWNER
-+EDMA1_CH18          OWNER
-+EDMA1_CH19          OWNER
-+EDMA1_CH20          OWNER
-+EDMA1_CH21          OWNER
-+EDMA1_CH22          OWNER
-+EDMA1_CH23          OWNER
-+EDMA1_CH24          OWNER
-+EDMA1_CH25          OWNER
-+EDMA1_CH26          OWNER
-+EDMA1_CH27          OWNER
-+EDMA1_CH28          OWNER
-+EDMA1_CH29          OWNER
-+EDMA1_CH30          OWNER
-+EDMA1_CH31          OWNER
-+EDMA2_MP            OWNER
-+EDMA2_CH0_1         OWNER
-+EDMA2_CH2_3         OWNER
-+EDMA2_CH4_5         OWNER
-+EDMA2_CH6_7         OWNER
-+EDMA2_CH8_9         OWNER
-+EDMA2_CH10_11       OWNER
-+EDMA2_CH12_13       OWNER
-+EDMA2_CH14_15       OWNER
-+EDMA2_CH16_17       OWNER
-+EDMA2_CH18_19       OWNER
-+EDMA2_CH20_21       OWNER
-+EDMA2_CH22_23       OWNER
-+EDMA2_CH24_25       OWNER
-+EDMA2_CH26_27       OWNER
-+EDMA2_CH28_29       OWNER
-+EDMA2_CH30_31       OWNER
-+EDMA2_CH32_33       OWNER
-+EDMA2_CH34_35       OWNER
-+EDMA2_CH36_37       OWNER
-+EDMA2_CH38_39       OWNER
-+EDMA2_CH40_41       OWNER
-+EDMA2_CH42_43       OWNER
-+EDMA2_CH44_45       OWNER
-+EDMA2_CH46_47       OWNER
-+EDMA2_CH48_49       OWNER
-+EDMA2_CH50_51       OWNER
-+EDMA2_CH52_53       OWNER
-+EDMA2_CH54_55       OWNER
-+EDMA2_CH56_57       OWNER
-+EDMA2_CH58_59       OWNER
-+EDMA2_CH60_61       OWNER
-+EDMA2_CH62_63       OWNER
-+EDMA3_MP            OWNER
-+EDMA3_CH0_1         OWNER
-+EDMA3_CH2_3         OWNER
-+EDMA3_CH4_5         OWNER
-+EDMA3_CH6_7         OWNER
-+EDMA3_CH8_9         OWNER
-+EDMA3_CH10_11       OWNER
-+EDMA3_CH12_13       OWNER
-+EDMA3_CH14_15       OWNER
-+EDMA3_CH16_17       OWNER
-+EDMA3_CH18_19       OWNER
-+EDMA3_CH20_21       OWNER
-+EDMA3_CH22_23       OWNER
-+EDMA3_CH24_25       OWNER
-+EDMA3_CH26_27       OWNER
-+EDMA3_CH28_29       OWNER
-+EDMA3_CH30_31       OWNER
-+EDMA3_CH32_33       OWNER
-+EDMA3_CH34_35       OWNER
-+EDMA3_CH36_37       OWNER
-+EDMA3_CH38_39       OWNER
-+EDMA3_CH40_41       OWNER
-+EDMA3_CH42_43       OWNER
-+EDMA3_CH44_45       OWNER
-+EDMA3_CH46_47       OWNER
-+EDMA3_CH48_49       OWNER
-+EDMA3_CH50_51       OWNER
-+EDMA3_CH52_53       OWNER
-+EDMA3_CH54_55       OWNER
-+EDMA3_CH56_57       OWNER
-+EDMA3_CH58_59       OWNER
-+EDMA3_CH60_61       OWNER
-+EDMA3_CH62_63       OWNER
-+FLEXIO1             OWNER
-+FLEXIO2             OWNER
-+FLEXSPI1            OWNER
-+FSB                 READONLY
-+GIC                 OWNER
-+GPIO2               OWNER
-+GPIO3               OWNER
-+GPIO4               OWNER
-+GPIO5               OWNER
-+GPR4                OWNER, test
-+GPR5                OWNER
-+GPR6                OWNER
-+GPR7                OWNER
-+GPU_NPROT           OWNER
-+GPU_PROT            OWNER, test
-+I3C1                OWNER
-+I3C2                OWNER
-+ISI1                OWNER
-+ISI2                OWNER
-+ISI3                OWNER
-+ISI4                OWNER
-+ISI5                OWNER
-+ISI6                OWNER
-+ISI7                OWNER
-+ISI8                OWNER
-+ISP_CPU             OWNER
-+ISP_MGR             OWNER, test
-+JPEG_DEC            OWNER
-+LPI2C2              OWNER
-+LPI2C3              OWNER
-+LPI2C4              OWNER
-+LPI2C5              OWNER
-+LPI2C6              OWNER
-+LPI2C7              OWNER
-+LPI2C8              OWNER
-+LPIT2               OWNER
-+LPSPI1              OWNER
-+LPSPI2              OWNER
-+LPSPI3              OWNER
-+LPSPI4              OWNER
-+LPSPI5              OWNER
-+LPSPI6              OWNER
-+LPSPI7              OWNER
-+LPSPI8              OWNER
-+LPTPM2              OWNER
-+LPTPM3              OWNER
-+LPTPM4              OWNER
-+LPTPM5              OWNER
-+LPTPM6              OWNER
-+LPUART1             OWNER
-+LPUART4             OWNER
-+LPUART5             OWNER
-+LPUART6             OWNER
-+LPUART7             OWNER
-+LPUART8             OWNER, test
-+LVDS                OWNER
-+MIPI_CSI0           OWNER
-+MIPI_CSI1           OWNER
-+MIPI_DSI            OWNER
-+MIPI_PHY            OWNER
-+MJPEG_DEC1          OWNER
-+MJPEG_DEC2          OWNER
-+MJPEG_DEC3          OWNER
-+MJPEG_DEC4          OWNER
-+MJPEG_ENC           OWNER
-+MJPEG_ENC1          OWNER
-+MJPEG_ENC2          OWNER
-+MJPEG_ENC3          OWNER
-+MJPEG_ENC4          OWNER
-+MU2_A               OWNER
-+MU3_A               OWNER
-+MU4_A               OWNER
-+MU6_A               OWNER
-+MU7_A               OWNER
-+MU8_A               OWNER
-+MU_ELE3             OWNER
-+MU_ELE4             OWNER
-+NETC                OWNER, test
-+NETC0               OWNER
-+NETC1               OWNER
-+NETC2               OWNER
-+NETC_ECAM           OWNER
-+NETC_EMDIO0         OWNER
-+NETC_IERB           OWNER
-+NETC_LDID1          OWNER, kpa=1, sid=0x20
-+NETC_LDID2          OWNER, kpa=1, sid=0x21
-+NETC_LDID3          OWNER, kpa=1, sid=0x22
-+NETC_LDID4          OWNER, kpa=1, sid=0x23
-+NETC_LDID5          OWNER, kpa=1, sid=0x24
-+NETC_LDID6          OWNER, kpa=1, sid=0x25
-+NETC_LDID7          OWNER, kpa=1, sid=0x26
-+NETC_LDID8          OWNER, kpa=1, sid=0x27
-+NETC_PRB            OWNER
-+NETC_TIMER0         OWNER
-+NETC_VSI0           OWNER
-+NETC_VSI1           OWNER
-+NETC_VSI2           OWNER
-+NETC_VSI3           OWNER
-+NETC_VSI4           OWNER
-+NETC_VSI5           OWNER
-+NPU                 OWNER, test
-+PCI1_LUT0           OWNER, kpa=0, sid=0x10
-+PCI1_LUT1           OWNER, kpa=0, sid=0x11
-+PCI1_LUT2           OWNER, kpa=0, sid=0x12
-+PCI1_LUT3           OWNER, kpa=0, sid=0x13
-+PCI1_LUT4           OWNER, kpa=0, sid=0x14
-+PCI1_LUT5           OWNER, kpa=0, sid=0x15
-+PCI1_LUT6           OWNER, kpa=0, sid=0x16
-+PCI1_LUT7           OWNER, kpa=0, sid=0x17
-+PCI2_LUT0           OWNER, kpa=0, sid=0x18
-+PCI2_LUT1           OWNER, kpa=0, sid=0x19
-+PCI2_LUT2           OWNER, kpa=0, sid=0x1a
-+PCI2_LUT3           OWNER, kpa=0, sid=0x1b
-+PCI2_LUT4           OWNER, kpa=0, sid=0x1c
-+PCI2_LUT5           OWNER, kpa=0, sid=0x1d
-+PCI2_LUT6           OWNER, kpa=0, sid=0x1e
-+PCI2_LUT7           OWNER, kpa=0, sid=0x1f
-+PCIE1_OUT           OWNER
-+PCIE1_ROOT          OWNER
-+PCIE2_OUT           OWNER
-+PCIE2_ROOT          OWNER
-+PDM                 OWNER
-+SAI1                OWNER, test
-+SAI2                OWNER
-+SAI3                OWNER
-+SAI4                OWNER
-+SAI5                OWNER
-+SEMA41              OWNER
-+SEMA42              OWNER
-+SMMU                OWNER
-+SPDIF1              OWNER
-+SYSCTR_CMP          OWNER
-+SYSCTR_RD_STOP      READONLY
-+USB1                OWNER, test, kpa=0, sid=0xe
-+USB2                OWNER, kpa=0, sid=0xf
-+USDHC1              OWNER
-+USDHC2              OWNER
-+USDHC3              OWNER
-+V2X_APP0            OWNER
-+V2X_DEBUG           OWNER
-+V2X_FH              ACCESS
-+V2X_HSM1            OWNER
-+V2X_HSM2            OWNER
-+V2X_SHE0            OWNER
-+VIDEO_PLL1          OWNER
-+VPU                 OWNER, test
-+VPU1                OWNER
-+VPU2                OWNER
-+VPU3                OWNER
-+VPU4                OWNER
-+WDOG3               OWNER
-+WDOG4               OWNER
-+XSPI                OWNER
-+
-+# Pins
-+
-+PIN_CCM_CLKO1        OWNER
-+PIN_CCM_CLKO2        OWNER
-+PIN_CCM_CLKO3        OWNER
-+PIN_CCM_CLKO4        OWNER
-+PIN_DAP_TCLK_SWCLK   OWNER
-+PIN_DAP_TDI          OWNER
-+PIN_DAP_TDO_TRACESWO OWNER
-+PIN_DAP_TMS_SWDIO    OWNER
-+PIN_ENET1_MDC        OWNER
-+PIN_ENET1_MDIO       OWNER
-+PIN_ENET1_RD0        OWNER
-+PIN_ENET1_RD1        OWNER
-+PIN_ENET1_RD2        OWNER
-+PIN_ENET1_RD3        OWNER
-+PIN_ENET1_RX_CTL     OWNER
-+PIN_ENET1_RXC        OWNER
-+PIN_ENET1_TD0        OWNER
-+PIN_ENET1_TD1        OWNER
-+PIN_ENET1_TD2        OWNER
-+PIN_ENET1_TD3        OWNER
-+PIN_ENET1_TX_CTL     OWNER
-+PIN_ENET1_TXC        OWNER
-+PIN_ENET2_MDC        OWNER
-+PIN_ENET2_MDIO       OWNER
-+PIN_ENET2_RD0        OWNER
-+PIN_ENET2_RD1        OWNER
-+PIN_ENET2_RD2        OWNER
-+PIN_ENET2_RD3        OWNER
-+PIN_ENET2_RX_CTL     OWNER
-+PIN_ENET2_RXC        OWNER
-+PIN_ENET2_TD0        OWNER
-+PIN_ENET2_TD1        OWNER
-+PIN_ENET2_TD2        OWNER
-+PIN_ENET2_TD3        OWNER
-+PIN_ENET2_TX_CTL     OWNER
-+PIN_ENET2_TXC        OWNER
-+PIN_GPIO_IO00        OWNER
-+PIN_GPIO_IO01        OWNER
-+PIN_GPIO_IO02        OWNER
-+PIN_GPIO_IO03        OWNER
-+PIN_GPIO_IO04        OWNER
-+PIN_GPIO_IO05        OWNER
-+PIN_GPIO_IO06        OWNER
-+PIN_GPIO_IO07        OWNER
-+PIN_GPIO_IO08        OWNER
-+PIN_GPIO_IO09        OWNER
-+PIN_GPIO_IO10        OWNER
-+PIN_GPIO_IO11        OWNER
-+PIN_GPIO_IO12        OWNER
-+PIN_GPIO_IO13        OWNER
-+PIN_GPIO_IO16        OWNER
-+PIN_GPIO_IO17        OWNER
-+PIN_GPIO_IO18        OWNER
-+PIN_GPIO_IO19        OWNER
-+PIN_GPIO_IO20        OWNER
-+PIN_GPIO_IO21        OWNER
-+PIN_GPIO_IO22        OWNER
-+PIN_GPIO_IO23        OWNER
-+PIN_GPIO_IO24        OWNER
-+PIN_GPIO_IO25        OWNER
-+PIN_GPIO_IO26        OWNER
-+PIN_GPIO_IO27        OWNER
-+PIN_GPIO_IO28        OWNER
-+PIN_GPIO_IO29        OWNER
-+PIN_GPIO_IO30        OWNER
-+PIN_GPIO_IO31        OWNER
-+PIN_GPIO_IO32        OWNER
-+PIN_GPIO_IO33        OWNER
-+PIN_GPIO_IO34        OWNER
-+PIN_GPIO_IO35        OWNER
-+PIN_GPIO_IO36        OWNER
-+PIN_GPIO_IO37        OWNER
-+PIN_I2C2_SCL         OWNER
-+PIN_I2C2_SDA         OWNER
-+PIN_PDM_BIT_STREAM0  OWNER
-+PIN_PDM_CLK          OWNER
-+PIN_SAI1_RXD0        OWNER
-+PIN_SAI1_TXC         OWNER
-+PIN_SAI1_TXD0        OWNER
-+PIN_SAI1_TXFS        OWNER
-+PIN_SD1_CLK          OWNER
-+PIN_SD1_CMD          OWNER
-+PIN_SD1_DATA0        OWNER
-+PIN_SD1_DATA1        OWNER
-+PIN_SD1_DATA2        OWNER
-+PIN_SD1_DATA3        OWNER
-+PIN_SD1_DATA4        OWNER
-+PIN_SD1_DATA5        OWNER
-+PIN_SD1_DATA6        OWNER
-+PIN_SD1_DATA7        OWNER
-+PIN_SD1_STROBE       OWNER
-+PIN_SD2_CD_B         OWNER
-+PIN_SD2_CLK          OWNER
-+PIN_SD2_CMD          OWNER
-+PIN_SD2_DATA0        OWNER
-+PIN_SD2_DATA1        OWNER
-+PIN_SD2_DATA2        OWNER
-+PIN_SD2_DATA3        OWNER
-+PIN_SD2_RESET_B      OWNER
-+PIN_SD2_VSELECT      OWNER
-+PIN_SD3_CLK          OWNER
-+PIN_SD3_CMD          OWNER
-+PIN_SD3_DATA0        OWNER
-+PIN_SD3_DATA1        OWNER
-+PIN_SD3_DATA2        OWNER
-+PIN_SD3_DATA3        OWNER
-+PIN_UART1_RXD        OWNER, test
-+PIN_UART1_TXD        OWNER
-+PIN_XSPI1_DATA0      OWNER
-+PIN_XSPI1_DATA1      OWNER
-+PIN_XSPI1_DATA2      OWNER
-+PIN_XSPI1_DATA3      OWNER
-+PIN_XSPI1_DATA4      OWNER
-+PIN_XSPI1_DATA5      OWNER
-+PIN_XSPI1_DATA6      OWNER
-+PIN_XSPI1_DATA7      OWNER
-+PIN_XSPI1_DQS        OWNER
-+PIN_XSPI1_SCLK       OWNER
-+PIN_XSPI1_SS0_B      OWNER
-+PIN_XSPI1_SS1_B      OWNER
-+
-+# Memory
-+
-+FLEXSPI1_MEM        EXEC, begin=0x000000000, end=0x0FFFFFFFF
-+OCRAM_C             EXEC, begin=0x001000000, end=0x001017FFF
-+OCRAM               EXEC, begin=0x0204C0000, size=96K
-+GPU                 DATA, begin=0x04D900000, end=0x04DD7FFFF
-+DDR                 EXEC, begin=0x088000000, end=0x089FFFFFF
-+DDR                 EXEC, begin=0x08E000000, end=0x87FFFFFFF
 +
 -- 
 2.34.1
