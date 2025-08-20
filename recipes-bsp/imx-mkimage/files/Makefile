@@ -1,7 +1,7 @@
 MKIMG = ./mkimage_imx8
 
 CC ?= gcc
-REV ?= A0
+REV ?= B0
 OEI ?= NO
 MSEL ?= 0
 CFLAGS ?= -O2 -Wall -std=c99
@@ -27,7 +27,17 @@ endif
 
 LC_REVISION = $(shell echo $(REV) | tr ABC abc)
 
-AHAB_IMG = mx95$(LC_REVISION)-ahab-container.img
+ifeq ($(LC_REVISION),a0)
+LC_REVISION := a1
+endif
+
+ifeq ($(LC_REVISION),a1)
+ELE_REVISION := a0
+else
+ELE_REVISION := $(LC_REVISION)
+endif
+
+AHAB_IMG = mx95$(ELE_REVISION)-ahab-container.img
 SPL_LOAD_ADDR ?= 0x4aa00000		# For singleboot, non-SCMI SPL, use NPU SRAM
 SPL_LOAD_ADDR_M33_VIEW ?= 0x20480000 	# For lpboot, SCMI SPL
 ATF_LOAD_ADDR ?= 0x8A200000
@@ -36,7 +46,7 @@ MCU_TCM_ADDR ?= 0x1FFC0000		# 256KB TCM
 MCU_TCM_ADDR_ACORE_VIEW ?= 0x201C0000
 LPDDR_TYPE ?= lpddr5
 LPDDR_FUNC ?= train
-LPDDR_FW_VERSION ?= _v202311
+LPDDR_FW_VERSION ?= _v202409
 SPL_A55_IMG ?= u-boot-spl-ddr-v2.bin
 AP_IMG ?= ap.bin
 KERNEL_DTB ?= imx95-19x19-evk.dtb   # Used by kernel authentication
@@ -60,6 +70,23 @@ M7_XIP_ADDR ?= 0x28132000 # Point entry of m7 in flexspi0 nor flash
 M7_XIP_ADDR_ALIAS ?= 0x38132000 # Point entry of m7 in flexspi0 nor flash
 M7_IMAGE_XIP_OFFSET ?= 0x131000 # 1st container offset is 0x1000 when boot device is flexspi0 nor
 				# flash, actually the m7_image.bin is in 0x131000 + 0x1000 = 0x132000.
+
+ifeq ($(LC_REVISION),b0)
+CTNR_VERSION ?= 2 # For i.MX95 B0
+DDR_DUMMY = -ddr_dummy
+else
+CTNR_VERSION ?= 0
+DDR_DUMMY =
+endif
+
+FAST_HASH ?=
+ifeq ($(FAST_HASH),YES)
+MMC_FAST_HASH = -cntr_flags 0x20010
+XSPI_FAST_HASH = -cntr_flags 0x30010
+else
+MMC_FAST_HASH = 
+XSPI_FAST_HASH = 
+endif
 
 OEI_A55_LOAD_ADDR ?= 0x20498000
 OEI_A55_ENTR_ADDR ?= $(OEI_A55_LOAD_ADDR)
@@ -99,10 +126,12 @@ OEI_OPT_A55 += -hold 65536 $(OEI_DDR_QB_DATA)
 OEI_IMG_A55 += $(A55_OEI_DDRFW) $(OEI_DDR_QB_DATA)
 endif
 ifneq (,$(wildcard $(OEI_M33_DDR_IMG)))
-OEI_OPT_M33 += -oei $(M33_OEI_DDRFW) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
+OEI_OPT_M33 += $(DDR_DUMMY) -oei $(M33_OEI_DDRFW) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
 OEI_OPT_M33 += -hold 65536 $(OEI_DDR_QB_DATA)
 OEI_IMG_M33 += $(M33_OEI_DDRFW) $(OEI_DDR_QB_DATA)
 endif
+
+ifneq ($(LC_REVISION),b0) # No need to include M7 TCM init OEI for B0
 ifneq (,$(wildcard $(OEI_A55_TCM_IMG)))
 OEI_OPT_A55 += -oei $(OEI_A55_TCM_IMG) a55 $(OEI_A55_ENTR_ADDR) $(OEI_A55_LOAD_ADDR)
 OEI_IMG_A55 += $(OEI_A55_TCM_IMG)
@@ -111,6 +140,7 @@ ifneq (,$(wildcard $(OEI_M33_TCM_IMG)))
 OEI_OPT_M33 += -oei $(OEI_M33_TCM_IMG) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
 OEI_IMG_M33 += $(OEI_M33_TCM_IMG)
 endif
+endif # No need to include M7 TCM init OEI for B0
 
 ifeq (,$(OEI_IMG_M33))
 $(warning "Note: There are no Cortex-M33 oei images")
@@ -130,6 +160,15 @@ else
 ifeq ($(V2X),YES)
 $(error "V2X without OEI is not allowed as V2X FW resides in DDR")
 endif
+ifneq ($(LC_REVISION),b0)
+V2X_DUMMY_NPUSRAM = 0x4AA00000
+V2X_DUMMY = -dummy ${V2X_DUMMY_NPUSRAM}
+#A0/A1 needs M7 OEI even in OEI=NO case when trying to load M7 TCM image
+OEI_M33_TCM_IMG ?= oei-m33-tcm.bin
+OEI_OPT_M33 += -oei $(OEI_M33_TCM_IMG) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
+OEI_IMG_M33 += $(OEI_M33_TCM_IMG)
+endif
+
 endif
 
 ###########################
@@ -216,19 +255,19 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 			cp $(TEE).lz4 $(TEE); \
 		fi; \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -c \
+			./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
 				   -out u-boot-atf-container.img; \
 		else \
-			./$(MKIMG) -soc IMX9 -c \
+			./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		fi; \
 	else \
-		./$(MKIMG) -soc IMX9 -c \
+		./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c \
 			   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 			   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 			   -out u-boot-atf-container.img; \
@@ -237,21 +276,21 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 u-boot-atf-container-spinand.img: bl31.bin u-boot-hash.bin
 	if [ -f $(TEE) ]; then \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) \
+			./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) \
 				   -dev nand 4K -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
 				   -out u-boot-atf-container-spinand.img; \
 		else \
-			./$(MKIMG) -soc IMX9 -dev nand 4K -c \
+			./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -dev nand 4K -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
 				   -out u-boot-atf-container-spinand.img; \
 		fi; \
 	else \
-		./$(MKIMG) -soc IMX9 -dev nand 4K -c \
+		./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -dev nand 4K -c \
 			   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 			   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 			   -out u-boot-atf-container-spinand.img; \
@@ -266,64 +305,64 @@ flash_fw.bin: FORCE
 
 .PHONY: clean nightly
 clean:
-	echo "@rm -f u-boot-atf-container.img u-boot-spl-ddr-v2.bin m33-oei-ddrfw.bin a55-oei-ddrfw.bin u-boot-hash.bin flash.bin head.hash boot-spl-container.img"
-	echo "@rm -rf extracted_imgs"
+	@rm -f u-boot-atf-container.img u-boot-spl-ddr-v2.bin m33-oei-ddrfw.bin a55-oei-ddrfw.bin u-boot-hash.bin flash.bin head.hash boot-spl-container.img
+	@rm -rf extracted_imgs
 	@echo "imx95 clean done"
 
 flash_lpboot: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(V2X_DUMMY) -out flash.bin
 
 flash_lpboot_no_ahabfw: $(MKIMG) $(MCU_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c $(OEI_OPT_M33) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
 
 flash_lpboot_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(XSPI_FAST_HASH) -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(V2X_DUMMY) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_lpboot_flexspi_no_ahabfw: $(MKIMG) $(MCU_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -dev flexspi -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(XSPI_FAST_HASH) -dev flexspi -c $(OEI_OPT_M33) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_lpboot_flexspi_xip: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -fileoff $(M33_IMAGE_XIP_OFFSET) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(XSPI_FAST_HASH) -dev flexspi -append $(AHAB_IMG) -fileoff $(M33_IMAGE_XIP_OFFSET) \
 		   -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) $(V2X_DUMMY) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_a55: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33) $(OEI_M33_DDR_IMG)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_a55_no_ahabfw: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_a55_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_M33) fcb.bin u-boot-atf-container.img
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(XSPI_FAST_HASH) -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 	$(call append_fcb)
 
 flash_m7_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS) -out flash.bin
 
 flash_m7: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(AHAB_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS) $(V2X_DUMMY) -out flash.bin
 
 flash_m7_flexspi_xip: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(AHAB_IMG) $(OEI_IMG_M33) fcb.bin
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(XSPI_FAST_HASH) -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -fcb fcb.bin $(FCB_LOAD_ADDR)\
 		   -fileoff $(M7_IMAGE_XIP_OFFSET)\
 		   -m7 $(M7_IMG) 0 $(M7_XIP_ADDR) $(M7_XIP_ADDR_ALIAS) $(V2X_DUMMY)\
@@ -332,42 +371,33 @@ flash_m7_flexspi_xip: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(AHAB_IMG) $(OEI_IMG_M33) f
 
 # The diff with "flash_m7_no_ahabfw" is M7_TCM_ADDR vs M7_DDR_ADDR in -m7 option
 flash_m7_ddr_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_DDR_ADDR) $(M7_DDR_ADDR) -out flash.bin
 
 # The diff with "flash_m7" is M7_TCM_ADDR vs M7_DDR_ADDR in -m7 option
 flash_m7_ddr: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(OEI_IMG_M33) $(AHAB_IMG)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) \
+		   -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_DDR_ADDR) $(M7_DDR_ADDR) $(V2X_DUMMY) -out flash.bin
 
-flash_all_no_m7: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33)
-	rm -rf flash.bin
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
-		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
-		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
-	$(call append_container,u-boot-atf-container.img,1)
-	@mv flash.bin $@; ln -s $@ flash.bin
-
 flash_all: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33)
-	rm -rf flash.bin
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS)  \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
-	@mv flash.bin $@; ln -s $@ flash.bin
 
 flash_all_ddr: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_DDR_ADDR) $(M7_DDR_ADDR)  \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_all_ddr_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33) fcb.bin
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(XSPI_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_DDR_ADDR) $(M7_DDR_ADDR)  \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) \
@@ -376,44 +406,44 @@ flash_all_ddr_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-cont
 	$(call append_fcb)
 
 flash_all_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS)  \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_all_ap: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) $(AP_IMG) $(OEI_IMG_M33)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS)  \
 		   -ap $(AP_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
 
 flash_sentinel: $(MKIMG) ahabfw.bin
-	./$(MKIMG) -soc IMX9 -c -sentinel ahabfw.bin -out flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c -sentinel ahabfw.bin -out flash.bin
 
-ifeq ($(REV),A0)
+ifneq ($(LC_REVISION),b0)
 prepare_kernel_chunks: Image
 	./$(SPLIT_KERNEL) Image $(KERNEL_ADDR) 0x700000
 
 flash_kernel: $(MKIMG) prepare_kernel_chunks $(KERNEL_DTB)
 	KERNEL_CMD="$(shell cat Image_cmd)"; \
-	./$(MKIMG) -soc IMX9 -c $$KERNEL_CMD --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c $$KERNEL_CMD --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
 else
 flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
-	./$(MKIMG) -soc IMX9 -c -ap Image a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c -ap Image a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
 endif
 
 flash_bootaux_cntr: $(MKIMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -out flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -out flash.bin
 
 flash_bootaux_cntr_xip: $(MKIMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -c -fileoff $(M33_IMAGE_XIP_OFFSET) -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c -fileoff $(M33_IMAGE_XIP_OFFSET) -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
-	./$(MKIMG) -soc IMX9 -parse flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -parse flash.bin
 
 extract: $(MKIMG) flash.bin
-	./$(MKIMG) -soc IMX9 -extract flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -extract flash.bin
 
 flash_lpboot_sm_a55: flash_a55
 flash_lpboot_sm_a55_no_ahabfw: flash_a55_no_ahabfw
@@ -434,17 +464,17 @@ flash_netc: flash_lpboot_sm_all
 flash_evk: flash_lpboot_sm_all
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) $(SPL_A55_IMG) u-boot-atf-container.img $(OEI_IMG_A55)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_singleboot_no_ahabfw: $(MKIMG) $(SPL_A55_IMG) u-boot-atf-container.img $(OEI_IMG_A55)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c $(OEI_OPT_A55) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_singleboot_spinand: $(MKIMG) $(AHAB_IMG) $(SPL_A55_IMG) u-boot-atf-container-spinand.img $(OEI_IMG_A55) flash_fw.bin
-	./$(MKIMG) -soc IMX9 -dev nand 4K -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -dev nand 4K -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container-spinand.img,4)
 
@@ -452,26 +482,26 @@ flash_singleboot_spinand_fw: flash_fw.bin
 	@mv -f flash_fw.bin flash.bin
 
 flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) $(OEI_IMG_A55) $(SPL_A55_IMG) u-boot-atf-container.img fcb.bin
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) $(V2X_DUMMY) \
 		   -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 	$(call append_fcb)
 
 flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) u-boot-atf-container.img $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_A55)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_singleboot_m33_no_ahabfw: $(MKIMG) u-boot-atf-container.img $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_A55)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c $(OEI_OPT_A55) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_A55) fcb.bin
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) $(V2X_DUMMY) \
 		   -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
@@ -479,14 +509,14 @@ flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-cont
 	$(call append_fcb)
 
 flash_singleboot_all: $(MKIMG) $(AHAB_IMG) u-boot-atf-container.img $(MCU_IMG) $(M7_IMG) $(SPL_A55_IMG) $(OEI_IMG_A55)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -append $(AHAB_IMG) -c $(OEI_OPT_A55) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_singleboot_all_no_ahabfw: $(MKIMG) u-boot-atf-container.img $(MCU_IMG) $(M7_IMG) $(SPL_A55_IMG) $(OEI_IMG_A55)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_A55) \
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c $(OEI_OPT_A55) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR) -out flash.bin
