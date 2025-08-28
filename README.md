@@ -30,6 +30,14 @@ export MACHINE=ucm-imx95
 ```
 source compulab-setup-env build-${MACHINE}
 ```
+* Set a correct imx soc revision:
+
+|Revision|``conf/local.conf`` string
+|---|---|
+|A0| IMX_SOC_REV:mx95-generic-bsp = "A0"|
+|A1| IMX_SOC_REV:mx95-generic-bsp = "A0"|
+|B0| IMX_SOC_REV:mx95-generic-bsp = "B0"|
+
 ##  Building full rootfs image:
 * Build command
 ```
