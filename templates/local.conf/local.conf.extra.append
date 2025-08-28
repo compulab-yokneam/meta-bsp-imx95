@@ -1,0 +1,3 @@
+# Uncomment next lines for chromium
+# IMAGE_INSTALL:append = " chromium-ozone-wayland"
+# PREFERRED_PROVIDER_chromium = "chromium-ozone-wayland"
