@@ -1,0 +1,38 @@
+From 1d0d5138e99deb0cd2ee73afaba9f7e564d6e493 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Thu, 28 Aug 2025 13:01:34 +0300
+Subject: [PATCH] monitor_cmds: Improve lm command
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ sm/utilities/monitor/monitor_cmds.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/sm/utilities/monitor/monitor_cmds.c b/sm/utilities/monitor/monitor_cmds.c
+index 5f1a9fd..2bcf3d9 100755
+--- a/sm/utilities/monitor/monitor_cmds.c
++++ b/sm/utilities/monitor/monitor_cmds.c
+@@ -1338,6 +1338,7 @@ static int32_t MONITOR_CmdLm(int32_t argc, const char * const argv[])
+                     break;
+                 case 1:  /* default */
+                     s_lm = lm;
++                    s_lm  = strtoul(argv[1], NULL, 0);
+                     break;
+                 case 2:  /* boot */
+                     status = LMM_SystemLmBoot(0U, 0U, lm, &g_swReason);
+@@ -1371,7 +1372,11 @@ static int32_t MONITOR_CmdLm(int32_t argc, const char * const argv[])
+     }
+     else
+     {
+-        status = SM_ERR_MISSING_PARAMETERS;
++        for (uint8_t idx = 0U; idx < ARRAY_SIZE(cmds); idx++)
++        {
++            printf("lm %s\n", cmds[idx]);
++        }
++        status = SM_ERR_SUCCESS;
+     }
+ 
+     /* Return status */
+-- 
+2.34.1
+
