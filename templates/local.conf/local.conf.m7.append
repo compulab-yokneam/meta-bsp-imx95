@@ -1,0 +1,3 @@
+# Uncomment next line in order to redefine 
+# the default m7 firmware compiled with the imx-boot
+# M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp = "imx95-19x19-evk_m7_TCM_rpmsg_lite_str_echo_rtos.bin"
