@@ -1,0 +1,2 @@
+# Uncomment next line if A0 is in use
+# IMX_SOC_REV:mx95-generic-bsp = "A0"
