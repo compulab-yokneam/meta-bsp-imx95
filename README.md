@@ -45,7 +45,7 @@ https://github.com/nxp-imx/meta-imx/blob/walnascar-6.12.20-2.0.0/meta-imx-bsp/co
  
 i.MX95 allows booting the m7 core at the system start.<br>
 In order to achive that an M7 firmware has to be a part of the imx-boot image.<br>
-The M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp variable specifies which firmware to use.
+The ``M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp`` variable specifies which firmware to use.
 
 The default is:<br>
 https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/conf/machine/compulab-imx95.inc#L34
