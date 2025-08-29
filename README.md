@@ -30,13 +30,31 @@ export MACHINE=ucm-imx95
 ```
 source compulab-setup-env build-${MACHINE}
 ```
-* Set a correct imx soc revision:
+* Set a correct imx soc revision (mandatory):
 
 |Revision|``conf/local.conf`` string
 |---|---|
 |A0| IMX_SOC_REV:mx95-generic-bsp = "A0"|
 |A1| IMX_SOC_REV:mx95-generic-bsp = "A0"|
 |B0| IMX_SOC_REV:mx95-generic-bsp = "B0"|
+
+The default is:<br>
+https://github.com/nxp-imx/meta-imx/blob/walnascar-6.12.20-2.0.0/meta-imx-bsp/conf/machine/include/imx-base-extend.inc#L23
+
+* M7 firmware (optional)
+ 
+i.MX95 allows booting the m7 core at the system start.<br>
+In order to achive that an M7 firmware has to be a part of the imx-boot image.<br>
+The M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp variable specifies which firmware to use.
+
+The default is:<br>
+https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/conf/machine/compulab-imx95.inc#L34
+
+In order to use another firmware add this line to the ``conf/local.conf``
+```
+M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp = "imx95-19x19-evk_m7_TCM_rpmsg_lite_str_echo_rtos.bin"
+```
+Precompiled m7 firmware files can be found at ``${DEPLOYDIR}/mcore-demos``
 
 ##  Building full rootfs image:
 * Build command
