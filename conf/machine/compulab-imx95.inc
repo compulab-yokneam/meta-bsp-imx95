@@ -33,6 +33,8 @@ DDR_FIRMWARE_NAME = " \
 
 M4_DEFAULT_IMAGE_MX95 = "imx95-19x19-evk_m7_TCM_power_mode_switch.bin"
 
+IMXBOOT_TARGETS:compulab-mx95 = "flash_all flash_lpboot_sm_a55"
+
 SYSTEM_MANAGER_CONFIG = "mx95cpl"
 
 IMXBOOT_TARGETS = "${IMXBOOT_TARGETS_BASENAME}_all"
