@@ -33,11 +33,14 @@ DDR_FIRMWARE_NAME = " \
 
 M4_DEFAULT_IMAGE_MX95 = "imx95-19x19-evk_m7_TCM_power_mode_switch.bin"
 
-IMXBOOT_TARGETS:compulab-mx95 = "flash_all flash_lpboot_sm_a55"
+IMXBOOT_VARIANT = "rpmsg"
 
-SYSTEM_MANAGER_CONFIG = "mx95cpl"
+SYSTEM_MANAGER_CONFIG = "${@bb.utils.contains('IMXBOOT_VARIANT','rpmsg','mx95cplrpmsg','mx95cpl', d)}"
 
-IMXBOOT_TARGETS = "${IMXBOOT_TARGETS_BASENAME}_all"
+IMXBOOT_TARGETS = " \
+    ${@bb.utils.contains('IMXBOOT_VARIANT', 'rpmsg', '${IMXBOOT_TARGETS_BASENAME}_lpboot_sm_a55', \
+                                                     '${IMXBOOT_TARGETS_BASENAME}_all ${IMXBOOT_TARGETS_BASENAME}_a55', d)} \
+"
 
 IMX_BOOT_SOC_TARGET = "iMX95"
 IMX_BOOT_SEEK = "32"
