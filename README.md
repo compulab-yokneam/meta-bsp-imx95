@@ -63,8 +63,8 @@ CompuLab has two options:
 
 |Variable|Value|Description|
 |---|---|---|
-|IMXBOOT_VARIANT|""|SM configuratiom ``mx95cpl`` is in use|
-|IMXBOOT_VARIANT|"rpmsg"|SM configuratiom ``mx95cplrpmsg`` is in use|
+|IMXBOOT_VARIANT|""|SM configuration ``mx95cpl`` is in use|
+|IMXBOOT_VARIANT|"rpmsg"|SM configuration ``mx95cplrpmsg`` is in use|
 
 Deatlis about SM and M7 can be found [here](https://github.com/compulab-yokneam/Documentation/blob/master/man/imx95-m7.md).
 
