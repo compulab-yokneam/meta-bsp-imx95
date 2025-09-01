@@ -58,7 +58,7 @@ Precompiled m7 firmware files can be found at ``${DEPLOYDIR}/mcore-demos``
 
 * Set SM configuration
 
-The systen controller configuration[can be chabged by setting a value to ``IMXBOOT_VARIANT`` variable.<br>
+The systen controller configuration can be chabged by setting a value to ``IMXBOOT_VARIANT`` variable.<br>
 CompuLab has two options:
 
 |Variable|Value|Description|
