@@ -1,0 +1,57 @@
+From e1e703c5bb907e52e40129098cfd2e38887e1a84 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Tue, 2 Sep 2025 11:14:59 +0300
+Subject: [PATCH] compulab: cfg: Update mx95cplrpmsg config
+
+Remove the MXP EVK foot prints.
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ configs/other/mx95cplrpmsg.cfg | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/configs/other/mx95cplrpmsg.cfg b/configs/other/mx95cplrpmsg.cfg
+index d77e4ed..b7d3381 100755
+--- a/configs/other/mx95cplrpmsg.cfg
++++ b/configs/other/mx95cplrpmsg.cfg
+@@ -30,7 +30,7 @@
+ ##
+ ## ###################################################################
+ 
+-# SM configuration file for the MX95 EVK
++# SM configuration file for the MX95 CompuLab SOM
+ 
+ MAKE    soc=MIMX95, board=mcimx95cpl, build=gcc_cross
+ DOX     name=MX95CPL, desc="i.MX95 CompuLab Configuration Data"
+@@ -418,9 +418,7 @@ EDMA2_CH60_61       ACCESS
+ EDMA2_CH62_63       ACCESS
+ FSB                 READONLY
+ IRQSTEER_M7         OWNER
+-## For i.MX95 15x15 EVK
+ LPI2C2              ACCESS
+-## For i.MX95 19x19 EVK
+ LPI2C4              ACCESS
+ LPIT1               OWNER
+ LPTMR1              OWNER
+@@ -452,9 +450,7 @@ PIN_GPIO_IO16       OWNER
+ PIN_GPIO_IO17       OWNER
+ PIN_GPIO_IO20       OWNER
+ PIN_GPIO_IO26       OWNER
+-# for i.MX95 19x19 EVK
+ PIN_GPIO_IO21       OWNER
+-# for i.MX95 15x15 EVK
+ PIN_GPIO_IO19       OWNER
+ 
+ # PDM pins
+@@ -462,8 +458,6 @@ PIN_PDM_BIT_STREAM0 OWNER
+ PIN_PDM_BIT_STREAM1 OWNER
+ PIN_PDM_CLK         OWNER
+ 
+-# we use one cfg for i.MX95-19x19-EVK and i.MX95-15x15-EVK,
+-# so expose both LPI2C4 and LPI2C2 to M7.
+ # LPI2C4 pins
+ PIN_GPIO_IO30        ACCESS
+ PIN_GPIO_IO31        ACCESS
+-- 
+2.34.1
+
