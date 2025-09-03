@@ -32,26 +32,21 @@ export MACHINE=${COMPULAB_MACHINE} source compulab-setup-env build-${COMPULAB_MA
 ```
 * Set a correct imx soc revision (mandatory):
 
-|Revision|``conf/local.conf`` string
+The current relase supports free SOC revisions: **A0**, **A1** and **B0**.
+|NOTE|[Default revision is B0](https://github.com/nxp-imx/meta-imx/blob/walnascar-6.12.20-2.0.0/meta-imx-bsp/conf/machine/include/imx-base-extend.inc#L23)|
+|---|---|
+
+|Revision|``conf/local.conf`` string|
 |---|---|
 |A0| IMX_SOC_REV:mx95-generic-bsp = "A0"|
 |A1| IMX_SOC_REV:mx95-generic-bsp = "A0"|
 |B0| IMX_SOC_REV:mx95-generic-bsp = "B0"|
 
-|NOTE|Default revision is B0|
-|---|---|
-
-The default is:<br>
-https://github.com/nxp-imx/meta-imx/blob/walnascar-6.12.20-2.0.0/meta-imx-bsp/conf/machine/include/imx-base-extend.inc#L23
-
 * M7 firmware (optional)
  
 i.MX95 allows booting the m7 core at the system start.<br>
 In order to achive that an M7 firmware has to be a part of the imx-boot image.<br>
-The ``M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp`` variable specifies which firmware to use.
-
-The default is:<br>
-https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/conf/machine/compulab-imx95.inc#L34
+The [``M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/conf/machine/compulab-imx95.inc#L34) variable specifies which firmware to use.
 
 In order to use another firmware add this line to the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/templates/local.conf/local.conf.m7.append#L3):
 ```
@@ -61,7 +56,7 @@ Precompiled m7 firmware files can be found at ``${DEPLOYDIR}/mcore-demos``
 
 * Set SM configuration
 
-The current relase provides two SM configurations: ``mx95cpl`` and ``mx95cplrpmsg``.<br>
+The current relase provides two SM configurations: **mx95cpl** and **mx95cplrpmsg**.<br>
 
 |NOTE|Default SM configuration is ``mx95cpl``|
 |---|---|
