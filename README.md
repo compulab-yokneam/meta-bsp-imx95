@@ -28,7 +28,7 @@ export COMPULAB_MACHINE=ucm-imx95
 ```
 * Initialize the environment:
 ```
-export MACHINE=${COMPULAB_MACHINE} source compulab-setup-env build-${COMPULAB_MACHINE}
+MACHINE=${COMPULAB_MACHINE} source compulab-setup-env build-${COMPULAB_MACHINE}
 ```
 * Set a correct imx soc revision (mandatory):
 
