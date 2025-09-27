@@ -13,7 +13,7 @@
 * NXP:
 ```
 mkdir compulab-nxp-bsp && cd compulab-nxp-bsp
-repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-walnascar -m imx-6.12.20-2.0.0.xml
+repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-walnascar -m imx-6.12.34-2.1.0.xml
 ```
 * CompuLab:
 ```
@@ -32,8 +32,8 @@ export MACHINE=${COMPULAB_MACHINE} source compulab-setup-env build-${COMPULAB_MA
 ```
 * Set a correct imx soc revision (mandatory):
 
-The current relase supports free SOC revisions: **A0**, **A1** and **B0**.
-|NOTE|[Default revision is B0](https://github.com/nxp-imx/meta-imx/blob/walnascar-6.12.20-2.0.0/meta-imx-bsp/conf/machine/include/imx-base-extend.inc#L23)|
+The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
+|NOTE|[Default revision is B0](https://github.com/nxp-imx/meta-imx/blob/walnascar-6.12.34-2.1.0/meta-imx-bsp/conf/machine/include/imx-base-extend.inc#L23)|
 |---|---|
 
 |Revision|``conf/local.conf`` string|
