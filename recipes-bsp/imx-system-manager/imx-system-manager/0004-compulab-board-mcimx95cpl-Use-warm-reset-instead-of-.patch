@@ -1,8 +1,8 @@
-From a2bdd0bae54d09db5403d93b0040340ca0b7108b Mon Sep 17 00:00:00 2001
+From d3c756e508bcc2a9e4d5f3edd0beb38e17d3abc7 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
 Date: Wed, 6 Aug 2025 16:10:43 +0300
-Subject: [PATCH 4/4] compulab: board mcimx95cpl: Use warm reset instead of
- wdog on B0
+Subject: [PATCH] compulab: board mcimx95cpl: Use warm reset instead of wdog on
+ B0
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
@@ -10,10 +10,10 @@ Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
  1 file changed, 3 insertions(+)
 
 diff --git a/boards/mcimx95cpl/sm/brd_sm.c b/boards/mcimx95cpl/sm/brd_sm.c
-index cd48b59..eff4970 100755
+index 36b4b52..f528b59 100755
 --- a/boards/mcimx95cpl/sm/brd_sm.c
 +++ b/boards/mcimx95cpl/sm/brd_sm.c
-@@ -456,9 +456,11 @@ void BRD_SM_ShutdownRecordSave(dev_sm_rst_rec_t shutdownRec)
+@@ -455,9 +455,11 @@ void BRD_SM_ShutdownRecordSave(dev_sm_rst_rec_t shutdownRec)
  /*--------------------------------------------------------------------------*/
  /* Reset board                                                              */
  /*--------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@ index cd48b59..eff4970 100755
      rgpio_pin_config_t gpioConfig =
      {
          kRGPIO_DigitalOutput,
-@@ -472,6 +474,7 @@ int32_t BRD_SM_SystemReset(void)
+@@ -471,6 +473,7 @@ int32_t BRD_SM_SystemReset(void)
      /* Wait for PMIC to react */
      SystemTimeDelay(1000U);
  

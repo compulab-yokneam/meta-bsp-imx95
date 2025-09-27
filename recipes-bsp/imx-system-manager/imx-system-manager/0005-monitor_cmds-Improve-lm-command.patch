@@ -1,6 +1,6 @@
-From 1d0d5138e99deb0cd2ee73afaba9f7e564d6e493 Mon Sep 17 00:00:00 2001
+From db6b4cd2a79236cb24413539408192934c8f3b12 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
-Date: Thu, 28 Aug 2025 13:01:34 +0300
+Date: Sat, 27 Sep 2025 15:34:50 +0300
 Subject: [PATCH] monitor_cmds: Improve lm command
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
@@ -9,18 +9,18 @@ Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/sm/utilities/monitor/monitor_cmds.c b/sm/utilities/monitor/monitor_cmds.c
-index 5f1a9fd..2bcf3d9 100755
+index df585c2..cc26ee2 100755
 --- a/sm/utilities/monitor/monitor_cmds.c
 +++ b/sm/utilities/monitor/monitor_cmds.c
-@@ -1338,6 +1338,7 @@ static int32_t MONITOR_CmdLm(int32_t argc, const char * const argv[])
-                     break;
-                 case 1:  /* default */
-                     s_lm = lm;
-+                    s_lm  = strtoul(argv[1], NULL, 0);
-                     break;
-                 case 2:  /* boot */
-                     status = LMM_SystemLmBoot(0U, 0U, lm, &g_swReason);
-@@ -1371,7 +1372,11 @@ static int32_t MONITOR_CmdLm(int32_t argc, const char * const argv[])
+@@ -1368,6 +1368,7 @@ static int32_t MONITOR_CmdLm(int32_t argc, const char * const argv[])
+                 break;
+             case 1:  /* default */
+                 s_lm = lm;
++                s_lm  = strtoul(argv[1], NULL, 0);
+                 break;
+             case 2:  /* boot */
+                 status = LMM_SystemLmBoot(0U, 0U, lm, &g_swReason);
+@@ -1400,7 +1401,11 @@ static int32_t MONITOR_CmdLm(int32_t argc, const char * const argv[])
      }
      else
      {

@@ -1,7 +1,7 @@
-From 087fbcf249c683397758f3ad700cfd3aa5aad6a1 Mon Sep 17 00:00:00 2001
+From 1052a42d70aa044badc632436a605b2137d4fffe Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
-Date: Sun, 3 Aug 2025 23:02:07 +0300
-Subject: [PATCH 1/4] compulab: Add boards/mcimx95cpl
+Date: Sat, 27 Sep 2025 15:50:49 +0300
+Subject: [PATCH] compulab: Add boards/mcimx95cpl
 
 Add boards/mcimx95cpl:
 
@@ -12,25 +12,25 @@ cd -
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
- boards/mcimx95cpl/board.c              | 579 +++++++++++++++++++++
+ boards/mcimx95cpl/board.c              | 609 +++++++++++++++++++++
  boards/mcimx95cpl/board.h              | 164 ++++++
- boards/mcimx95cpl/pin_mux.c            |  58 +++
+ boards/mcimx95cpl/pin_mux.c            |  58 ++
  boards/mcimx95cpl/pin_mux.h            |  44 ++
  boards/mcimx95cpl/sm/Makefile          |  70 +++
- boards/mcimx95cpl/sm/brd_sm.c          | 665 ++++++++++++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm.c          | 664 +++++++++++++++++++++++
  boards/mcimx95cpl/sm/brd_sm.dox        |  55 ++
  boards/mcimx95cpl/sm/brd_sm.h          | 100 ++++
- boards/mcimx95cpl/sm/brd_sm_bbm.c      | 674 +++++++++++++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_bbm.c      | 721 +++++++++++++++++++++++++
  boards/mcimx95cpl/sm/brd_sm_bbm.h      | 242 +++++++++
- boards/mcimx95cpl/sm/brd_sm_control.c  | 317 ++++++++++++
- boards/mcimx95cpl/sm/brd_sm_control.h  | 202 ++++++++
- boards/mcimx95cpl/sm/brd_sm_handlers.c | 372 ++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_control.c  | 356 ++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_control.h  | 226 ++++++++
+ boards/mcimx95cpl/sm/brd_sm_handlers.c | 372 +++++++++++++
  boards/mcimx95cpl/sm/brd_sm_handlers.h | 129 +++++
- boards/mcimx95cpl/sm/brd_sm_sensor.c   | 375 ++++++++++++++
- boards/mcimx95cpl/sm/brd_sm_sensor.h   | 210 ++++++++
- boards/mcimx95cpl/sm/brd_sm_voltage.c  | 565 +++++++++++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_sensor.c   | 375 +++++++++++++
+ boards/mcimx95cpl/sm/brd_sm_sensor.h   | 210 +++++++
+ boards/mcimx95cpl/sm/brd_sm_voltage.c  | 565 +++++++++++++++++++
  boards/mcimx95cpl/sm/brd_sm_voltage.h  | 213 ++++++++
- 18 files changed, 5034 insertions(+)
+ 18 files changed, 5173 insertions(+)
  create mode 100755 boards/mcimx95cpl/board.c
  create mode 100755 boards/mcimx95cpl/board.h
  create mode 100755 boards/mcimx95cpl/pin_mux.c
@@ -52,10 +52,10 @@ Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 
 diff --git a/boards/mcimx95cpl/board.c b/boards/mcimx95cpl/board.c
 new file mode 100755
-index 0000000..d4a671f
+index 0000000..c9b97b2
 --- /dev/null
 +++ b/boards/mcimx95cpl/board.c
-@@ -0,0 +1,579 @@
+@@ -0,0 +1,609 @@
 +/*
 + * Copyright 2023-2025 NXP
 + *
@@ -171,8 +171,8 @@ index 0000000..d4a671f
 +    uint8_t attr;
 +
 +    /* Disable code cache(ICache) and system cache(DCache) */
-+    XCACHE_DisableCache(LPCAC_PC);
-+    XCACHE_DisableCache(LPCAC_PS);
++    XCACHE_DisableCache(M33_CACHE_CTRLPC);
++    XCACHE_DisableCache(M33_CACHE_CTRLPS);
 +
 +    /* NOTE: All TCRAM is non-cacheable regardless of MPU setting. */
 +
@@ -198,12 +198,12 @@ index 0000000..d4a671f
 +    ARM_MPU_Disable();
 +
 +    /* Attr0: Device-nGnRnE */
-+    // coverity[misra_c_2012_rule_14_3_violation:FALSE]
++    // coverity[misra_c_2012_rule_14_3_violation]
 +    ARM_MPU_SetMemAttr(0U, ARM_MPU_ATTR(ARM_MPU_ATTR_DEVICE,
 +        ARM_MPU_ATTR_DEVICE));
 +
 +    /* Attr1: Normal memory, Outer non-cacheable, Inner non-cacheable */
-+    // coverity[misra_c_2012_rule_14_3_violation:FALSE]
++    // coverity[misra_c_2012_rule_14_3_violation]
 +    ARM_MPU_SetMemAttr(1U, ARM_MPU_ATTR(ARM_MPU_ATTR_NON_CACHEABLE,
 +        ARM_MPU_ATTR_NON_CACHEABLE));
 +
@@ -295,8 +295,8 @@ index 0000000..d4a671f
 +    ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
 +
 +    /* Enable ICache and DCache */
-+    XCACHE_EnableCache(LPCAC_PC);
-+    XCACHE_EnableCache(LPCAC_PS);
++    XCACHE_EnableCache(M33_CACHE_CTRLPC);
++    XCACHE_EnableCache(M33_CACHE_CTRLPS);
 +}
 +
 +/*--------------------------------------------------------------------------*/
@@ -304,32 +304,47 @@ index 0000000..d4a671f
 +/*--------------------------------------------------------------------------*/
 +void BOARD_InitClocks(void)
 +{
++    bool rc;
 +    uint32_t fuseTrim = DEV_SM_FuseGet(DEV_SM_FUSE_FRO_TRIM);
 +
 +    if (fuseTrim == 0U)
 +    {
 +        /* Enable the FRO clock with default value */
-+        (void) FRO_SetEnable(true);
++        rc = FRO_SetEnable(true);
 +    }
 +    else
 +    {
 +        /* Set the Trim value read from the fuses */
-+        bool status = FRO_SetTrim(fuseTrim);
++        rc = FRO_SetTrim(fuseTrim);
 +
-+        if (status)
++        if (rc)
 +        {
 +            /* Enable the FRO clock with default value */
-+            (void) FRO_SetEnable(true);
++            rc = FRO_SetEnable(true);
 +        }
 +    }
 +
 +    /* Configure default EXT_CLK1 rate tied to XTAL_OUT/EXT_CLK pin */
-+    (void) CLOCK_SourceSetRate(CLOCK_SRC_EXT1, BOARD_EXT_CLK_RATE, 0U);
++    if (rc)
++    {
++        rc = CLOCK_SourceSetRate(CLOCK_SRC_EXT1, BOARD_EXT_CLK_RATE, 0U);
++    }
 +
 +    /* Configure ADC clock */
-+    (void) CCM_RootSetParent(CLOCK_ROOT_ADC, CLOCK_SRC_SYSPLL1_PFD1_DIV2);
-+    (void) CCM_RootSetRate(CLOCK_ROOT_ADC, BOARD_ADC_CLK_RATE,
-+        CLOCK_ROUND_RULE_CEILING);
++    if (rc)
++    {
++        rc = CCM_RootSetParent(CLOCK_ROOT_ADC, CLOCK_SRC_SYSPLL1_PFD1_DIV2);
++    }
++    if (rc)
++    {
++        rc = CCM_RootSetRate(CLOCK_ROOT_ADC, BOARD_ADC_CLK_RATE,
++            CLOCK_ROUND_RULE_CEILING);
++    }
++
++    if (!rc)
++    {
++        DEV_SM_ErrorLog(DEV_SM_ERR_INITCLOCKS);
++    }
 +}
 +
 +/*--------------------------------------------------------------------------*/
@@ -359,8 +374,11 @@ index 0000000..d4a671f
 +            FSL_FEATURE_LPUART_FIFO_SIZEn(s_uartConfig.base)) - 1U;
 +        lpuart_config.enableTx = true;
 +        lpuart_config.enableRx = true;
-+        (void) LPUART_Init(s_uartConfig.base, &lpuart_config,
-+            U64_U32(rate));
++        if (LPUART_Init(s_uartConfig.base, &lpuart_config,
++            U64_U32(rate)) != kStatus_Success)
++        {
++            DEV_SM_ErrorLog(DEV_SM_ERR_INITCONSOLE);
++        }
 +    }
 +}
 +
@@ -373,7 +391,7 @@ index 0000000..d4a671f
 +    for (int32_t irq = ((int32_t) SVCall_IRQn); irq < ((int32_t)
 +        NUMBER_OF_INT_VECTORS); irq++)
 +    {
-+        // coverity[misra_c_2012_rule_10_5_violation:FALSE]
++        // coverity[misra_c_2012_rule_10_5_violation]
 +        NVIC_SetPriority((IRQn_Type) irq, IRQ_PRIO_NOPREEMPT_NORMAL);
 +    }
 +
@@ -415,10 +433,22 @@ index 0000000..d4a671f
 +
 +    /* Configure and enable M33 SysTick */
 +    uint64_t rate = CCM_RootGetRate(BOARD_SYSTICK_CLK_ROOT);
-+    uint32_t reloadVal = (uint32_t) (rate & 0xFFFFFFFFU);
-+    reloadVal = ((reloadVal * BOARD_TICK_PERIOD_MSEC) + 999U) / 1000U;
-+    SYSTICK_Init(1U, BOARD_SYSTICK_CLKSRC, (uint32_t) (rate & 0xFFFFFFFFU),
-+        reloadVal);
++    uint64_t reloadVal;
++
++    /* If value wraps/exceeds, use max reload value */
++    if (rate <= (((1000ULL * SYSTICK_MAX_RELOAD) - 999ULL)
++        / BOARD_TICK_PERIOD_MSEC))
++    {
++        reloadVal = ((rate * U64(BOARD_TICK_PERIOD_MSEC)) + 999ULL)
++            / 1000ULL;
++    }
++    else
++    {
++        reloadVal = U64(SYSTICK_MAX_RELOAD);
++        DEV_SM_ErrorLog(DEV_SM_ERR_INITTIMERS);
++    }
++
++    SYSTICK_Init(1U, BOARD_SYSTICK_CLKSRC, U32(rate), U32(reloadVal));
 +    NVIC_EnableIRQ(SysTick_IRQn);
 +
 +    /* Configure and enable the WDOG */
@@ -527,7 +557,7 @@ index 0000000..d4a671f
 +{
 +    static LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
 +    LPI2C_Type *base = s_i2cBases[BOARD_I2C_INSTANCE];
-+    lpi2c_master_config_t lpi2cConfig = {0};
++    lpi2c_master_config_t lpi2cConfig = { 0 };
 +    static uint32_t const s_i2cClks[] =
 +    {
 +        0U,
@@ -637,7 +667,7 @@ index 0000000..d4a671f
 +
 diff --git a/boards/mcimx95cpl/board.h b/boards/mcimx95cpl/board.h
 new file mode 100755
-index 0000000..61ca03c
+index 0000000..19fa327
 --- /dev/null
 +++ b/boards/mcimx95cpl/board.h
 @@ -0,0 +1,164 @@
@@ -673,7 +703,7 @@ index 0000000..61ca03c
 + */
 +/** @{ */
 +#define BOARD_TICK_PERIOD_MSEC  10U                       /*!< Tick period */
-+#define BOARD_SWI_IRQn          Reserved110_IRQn          /*!< SWI IRQ */
++#define BOARD_SWI_IRQn          SWI_0_IRQn                /*!< SWI IRQ */
 +#define BOARD_HAS_WDOG                                    /*!< Has a watchdog */
 +#define BOARD_HAS_PMIC                                    /*!< Has a PMIC */
 +#define BOARD_PMIC_RESUME_TICKS ((20U * 32768U) / 10000U) /*!< 2ms in 32K ticks */
@@ -807,12 +837,12 @@ index 0000000..61ca03c
 +
 diff --git a/boards/mcimx95cpl/pin_mux.c b/boards/mcimx95cpl/pin_mux.c
 new file mode 100755
-index 0000000..b40d897
+index 0000000..d98df87
 --- /dev/null
 +++ b/boards/mcimx95cpl/pin_mux.c
 @@ -0,0 +1,58 @@
 +/*
-+ * Copyright 2023 NXP
++ * Copyright 2023, 2025 NXP
 + *
 + * SPDX-License-Identifier: BSD-3-Clause
 + */
@@ -864,7 +894,7 @@ index 0000000..b40d897
 +        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
 +#endif
 +
-+    /* Configure GPIO1-10 (INT from the PCAL6408A */
++    /* Configure GPIO1-10 (INT from the PCAL6408A) */
 +    IOMUXC_SetPinMux(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
 +    IOMUXC_SetPinConfig(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
 +}
@@ -997,10 +1027,10 @@ index 0000000..d5b5767
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm.c b/boards/mcimx95cpl/sm/brd_sm.c
 new file mode 100755
-index 0000000..cd48b59
+index 0000000..36b4b52
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm.c
-@@ -0,0 +1,665 @@
+@@ -0,0 +1,664 @@
 +/*
 +** ###################################################################
 +**
@@ -1052,7 +1082,7 @@ index 0000000..cd48b59
 +
 +/* Local defines */
 +
-+#define BRD_SM_RST_REC_FIRST  4U     /* First GPR for shutdown record */
++#define BRD_SM_RST_REC_FIRST  0U     /* First GPR for shutdown record */
 +#define BRD_SM_RST_REC_NUM    4U     /* Number of GPR for shutdown record */
 +
 +/* Defines to encode the reason */
@@ -1127,7 +1157,7 @@ index 0000000..cd48b59
 +/*--------------------------------------------------------------------------*/
 +/* Init board                                                               */
 +/*--------------------------------------------------------------------------*/
-+// coverity[misra_c_2012_directive_4_6_violation:FALSE]
++// coverity[misra_c_2012_directive_4_6_violation]
 +int32_t BRD_SM_Init(int argc, const char * const argv[], uint32_t *mSel)
 +{
 +    int32_t status;
@@ -1169,7 +1199,6 @@ index 0000000..cd48b59
 +        BOARD_WdogModeSet(BOARD_WDOG_MODE_FCCU);
 +    }
 +
-+    /* TODO: Remove when A0 support dropped */
 +    /* Configure ISO controls based on feature fuses */
 +    uint32_t ipIsoMask = 0U;
 +
@@ -1207,12 +1236,12 @@ index 0000000..cd48b59
 +    BOARD_WdogModeSet(BOARD_WDOG_MODE_OFF);
 +#else
 +    SM_SYSTEMERROR(status, pc);
-+    // coverity[misra_c_2012_rule_2_2_violation:FALSE]
++    // coverity[misra_c_2012_rule_2_2_violation]
 +    SystemExit();
 +#endif
 +
 +    /* Hang */
-+    // coverity[infinite_loop:FALSE]
++    // coverity[infinite_loop]
 +    while (true)
 +    {
 +        ; /* Intentional empty while */
@@ -1240,7 +1269,7 @@ index 0000000..cd48b59
 +/* Get fault reaction                                                       */
 +/*--------------------------------------------------------------------------*/
 +int32_t BRD_SM_FaultReactionGet(dev_sm_rst_rec_t resetRec,
-+    // coverity[misra_c_2012_rule_8_13_violation:FALSE]
++    // coverity[misra_c_2012_rule_8_13_violation]
 +    uint32_t *reaction, uint32_t *lm)
 +{
 +    int32_t status = SM_ERR_SUCCESS;
@@ -1668,7 +1697,7 @@ index 0000000..cd48b59
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm.dox b/boards/mcimx95cpl/sm/brd_sm.dox
 new file mode 100755
-index 0000000..48b9666
+index 0000000..13e5e20
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm.dox
 @@ -0,0 +1,55 @@
@@ -1715,7 +1744,7 @@ index 0000000..48b9666
 +
 +@defgroup BRD_SM_MX95CPL BOARD_MX95CPL: i.MX95 EVK SM Implementation
 +
-+@brief Module for the i.MX95 CompuLab SOM.
++@brief Module for the i.MX95 EVK for the SM.
 +
 +Board Module
 +============
@@ -1729,7 +1758,7 @@ index 0000000..48b9666
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm.h b/boards/mcimx95cpl/sm/brd_sm.h
 new file mode 100755
-index 0000000..96ff3af
+index 0000000..affa126
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm.h
 @@ -0,0 +1,100 @@
@@ -1796,7 +1825,7 @@ index 0000000..96ff3af
 +/* Defines */
 +
 +/*! Board name string */
-+#define BRD_SM_NAME  "i.MX95 CompuLab SOM"
++#define BRD_SM_NAME  "i.MX95 EVK"
 +
 +/*! Board attributes */
 +#define BRD_SM_ATTR  0x0
@@ -1835,10 +1864,10 @@ index 0000000..96ff3af
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_bbm.c b/boards/mcimx95cpl/sm/brd_sm_bbm.c
 new file mode 100755
-index 0000000..c2e5cd6
+index 0000000..6103583
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_bbm.c
-@@ -0,0 +1,674 @@
+@@ -0,0 +1,721 @@
 +/*
 +** ###################################################################
 +**
@@ -1897,7 +1926,7 @@ index 0000000..c2e5cd6
 +
 +static bool days2date(uint32_t days, uint32_t *year, uint32_t *month,
 +    uint32_t *day, uint32_t *weekday);
-+static void date2days(uint32_t year, uint32_t month, uint32_t day,
++static bool date2days(uint32_t year, uint32_t month, uint32_t day,
 +    uint32_t *days);
 +
 +/*--------------------------------------------------------------------------*/
@@ -1994,8 +2023,16 @@ index 0000000..c2e5cd6
 +    }
 +    else
 +    {
-+        /* Return pointer to name */
-+        *rtcNameAddr = s_name[rtcId - DEV_SM_NUM_RTC];
++        if ((rtcId - DEV_SM_NUM_RTC) < BRD_SM_NUM_RTC)
++        {
++            /* Return pointer to name */
++            *rtcNameAddr = s_name[rtcId - DEV_SM_NUM_RTC];
++        }
++        else
++        {
++            /* Set the status */
++            status = SM_ERR_INVALID_PARAMETERS;
++        }
 +    }
 +
 +    /* Return status */
@@ -2088,12 +2125,12 @@ index 0000000..c2e5cd6
 +        {
 +            status = SM_ERR_INVALID_PARAMETERS;
 +        }
-+    }
 +
-+    if (status == SM_ERR_SUCCESS)
-+    {
-+        /* Enable battery */
-+        (void) PCA2131_PowerModeSet(&g_pca2131Dev, 0U);
++        if (status == SM_ERR_SUCCESS)
++        {
++            /* Enable battery */
++            (void) PCA2131_PowerModeSet(&g_pca2131Dev, 0U);
++        }
 +    }
 +
 +    /* Return status */
@@ -2119,7 +2156,7 @@ index 0000000..c2e5cd6
 +        if (PCA2131_RtcGet(&g_pca2131Dev, &year, &month, &day, &hour, &min,
 +            &sec, &hun, &weekday))
 +        {
-+            uint32_t days, secs;
++            uint32_t days = 0U;
 +
 +            /* Convert year */
 +            if (year >= 70U)
@@ -2132,25 +2169,37 @@ index 0000000..c2e5cd6
 +            }
 +
 +            /* Convert to days */
-+            date2days(year, month, day, &days);
-+
-+            /* Calculate seconds */
-+            secs = sec + (min * 60U) + (hour * 3600U);
-+            secs += (days * 86400U);
-+
-+            /* Check time format */
-+            if (ticks)
++            if (date2days(year, month, day, &days))
 +            {
-+                *val = (((uint64_t) secs) * 100U) + hun;
++
++                /* Calculate seconds */
++                uint32_t secs = sec + (min * 60U) + (hour * 3600U);
++                secs += (days * 86400U);
++
++                /* Check time format */
++                if (ticks)
++                {
++                    *val = (((uint64_t) secs) * 100U) + hun;
++                }
++                else
++                {
++                    *val = ((uint64_t) secs);
++                }
 +            }
 +            else
 +            {
-+                *val = ((uint64_t) secs);
++                status = SM_ERR_HARDWARE_ERROR;
 +            }
 +        }
 +        else
 +        {
 +            status = SM_ERR_HARDWARE_ERROR;
++        }
++
++        if (status == SM_ERR_SUCCESS)
++        {
++            /* Enable battery */
++            (void) PCA2131_PowerModeSet(&g_pca2131Dev, 0U);
 +        }
 +    }
 +
@@ -2176,10 +2225,7 @@ index 0000000..c2e5cd6
 +        /* Default state */
 +        *state = 0U;
 +
-+        /* Enable battery */
-+        (void) PCA2131_PowerModeSet(&g_pca2131Dev, 0U);
-+
-+        /* Get battery state */
++        /* Get time status */
 +        if (PCA2131_TimeStatusGet(&g_pca2131Dev, &st))
 +        {
 +            if (st)
@@ -2465,7 +2511,7 @@ index 0000000..c2e5cd6
 +    if (rc)
 +    {
 +        /* Calculate month */
-+        *month= (moy < 10U) ? (moy + 3U) : (moy - 9U);
++        *month = (moy < 10U) ? (moy + 3U) : (moy - 9U);
 +
 +        /* Calculate day of the week */
 +        *weekday = (days + 4U) % 7U;
@@ -2481,36 +2527,66 @@ index 0000000..c2e5cd6
 +/*--------------------------------------------------------------------------*/
 +/* Convert date/time to days since 1-1-1970                                 */
 +/*--------------------------------------------------------------------------*/
-+static void date2days(uint32_t year, uint32_t month, uint32_t day,
++static bool date2days(uint32_t year, uint32_t month, uint32_t day,
 +    uint32_t *days)
 +{
-+    uint32_t newYear;
-+    uint32_t era;
-+    uint32_t doe;
-+    uint32_t yoe;
-+    uint32_t doy;
-+    uint32_t moy;
++    bool rc = true;
++    uint32_t newYear = 0U;
++    uint32_t era = 0U;
++    uint32_t yoe = 0U;
 +
-+    /* Adjust year */
++    /*
++     * False Positive: The value of variable year cann't be zero
++     */
++    // coverity[cert_int30_c_violation:FALSE]
 +    newYear = year - ((month <= 2U) ? 1U : 0U);
 +
 +    /* Calculate era */
 +    era = newYear / 400U;
 +
-+    /* Calculate the year of era */
-+    yoe = newYear - (era * 400U);
++    /* Check the expression value doesn't wrap */
++    if (newYear >= (era * 400U))
++    {
++        /* Calculate the year of era */
++        yoe = newYear - (era * 400U);
++    }
++    else
++    {
++        /* Handling if value wraps */
++        rc = false;
++    }
 +
-+    /* Calculate month of year */
-+    moy = (month > 2U) ? (month - 3U) : (month + 9U);
++    if (rc == true)
++    {
++        /* Calculate month of year */
++        uint32_t moy = (month > 2U) ? (month - 3U) : (month + 9U);
 +
-+    /* Calculate day of the year */
-+    doy = (((153U * moy) + 2U) / 5U) + (day - 1U);
++        /*
++         * False Positive: moy value will range 1 <=moy <= 12.
++         * Hence, the multiplication with 153 cann't overflow
++         */
++        // coverity[cert_int30_c_violation:FALSE]
++        uint32_t doy = (((153U * moy) + 2U) / 5U) + (day - 1U);
 +
-+    /* Calculate the day in the era */
-+    doe = (yoe * 365U) + (yoe / 4U) - (yoe / 100U) + doy;
++        /*
++         * False Positive: yoe is remainder value which will be always
++         * less than 400.
++         * Hence, the multiplication with 365 cann't overflow
++         */
++        // coverity[cert_int30_c_violation:FALSE]
++        uint32_t doe = (yoe * 365U) + (yoe / 4U) - (yoe / 100U) + doy;
 +
-+    /* Calculate days */
-+    *days = (era * 146097U) + doe - 719468U;
++        /*
++         * False Positive: era is quotient value dividing newYear with 400.
++         * The newYear variable will range from 1970 <= newYear <= 2070.
++         * Hence, the multiplication can't overflow.
++         */
++        // coverity[cert_int30_c_violation:FALSE]
++        *days = (era * 146097U) + doe - 719468U;
++    }
++
++    /* Return code */
++    return rc;
 +}
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_bbm.h b/boards/mcimx95cpl/sm/brd_sm_bbm.h
@@ -2763,14 +2839,14 @@ index 0000000..cf0e172
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_control.c b/boards/mcimx95cpl/sm/brd_sm_control.c
 new file mode 100755
-index 0000000..5b36c66
+index 0000000..fde28d9
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_control.c
-@@ -0,0 +1,317 @@
+@@ -0,0 +1,356 @@
 +/*
 +** ###################################################################
 +**
-+**     Copyright 2023-2024 NXP
++**     Copyright 2023-2025 NXP
 +**
 +**     Redistribution and use in source and binary forms, with or without modification,
 +**     are permitted provided that the following conditions are met:
@@ -2840,15 +2916,6 @@ index 0000000..5b36c66
 +        {
 +            status = DEV_SM_ControlSet(ctrlId, numVal, val);
 +        }
-+        else if (ctrlId == BRD_SM_CTRL_PCA2131)
-+        {
-+            status = SM_ERR_NOT_SUPPORTED;
-+        }
-+        else if (ctrlId == BRD_SM_CTRL_TEST)
-+        {
-+            /* Test response to an reported SM error */
-+            SM_Error(SM_ERR_GENERIC_ERROR);
-+        }
 +        else
 +        {
 +            status = SM_ERR_NOT_SUPPORTED;
@@ -2870,6 +2937,9 @@ index 0000000..5b36c66
 +{
 +    int32_t status = SM_ERR_SUCCESS;
 +
++    /* Default to no return */
++    *numRtn = 0U;
++
 +    /* Check to see if ctrlId is within bounds*/
 +    if (ctrlId < SM_NUM_CTRL)
 +    {
@@ -2878,13 +2948,7 @@ index 0000000..5b36c66
 +        {
 +            status = DEV_SM_ControlGet(ctrlId, numRtn, rtn);
 +        }
-+        else if ((ctrlId == BRD_SM_CTRL_PCA2131)
-+            || (ctrlId == BRD_SM_CTRL_TEST))
-+        {
-+            *numRtn = 0U;
-+            status = SM_ERR_NOT_SUPPORTED;
-+        }
-+        else
++        else if (ctrlId < BRD_SM_CTRL_TEST)
 +        {
 +            uint8_t data;
 +
@@ -2907,10 +2971,13 @@ index 0000000..5b36c66
 +                status = SM_ERR_HARDWARE_ERROR;
 +            }
 +        }
++        else
++        {
++            status = SM_ERR_NOT_SUPPORTED;
++        }
 +    }
 +    else
 +    {
-+        *numRtn = 0U;
 +        status = SM_ERR_NOT_FOUND;
 +    }
 +
@@ -2971,6 +3038,54 @@ index 0000000..5b36c66
 +        else if (ctrlId == BRD_SM_CTRL_PCA2131)
 +        {
 +            status = BRD_SM_BbmRtcRead(addr, numRtn, rtn);
++        }
++        else
++        {
++            status = SM_ERR_NOT_SUPPORTED;
++        }
++    }
++    else
++    {
++        status = SM_ERR_NOT_FOUND;
++    }
++
++    /* Return status */
++    return status;
++}
++
++/*--------------------------------------------------------------------------*/
++/* Do a control action                                                      */
++/*--------------------------------------------------------------------------*/
++int32_t BRD_SM_ControlAction(uint32_t ctrlId, uint32_t action,
++    uint32_t numArg, const uint32_t *arg, uint32_t *numRtn, uint32_t *rtn)
++{
++    int32_t status = SM_ERR_SUCCESS;
++
++    /* Default to no return */
++    *numRtn = 0U;
++
++    /* Check to see if ctrlId is within bounds*/
++    if (ctrlId < SM_NUM_CTRL)
++    {
++        /* Check if device or board */
++        if (ctrlId < DEV_SM_NUM_CTRL)
++        {
++            status = DEV_SM_ControlAction(ctrlId, action, numArg, arg,
++                numRtn, rtn);
++        }
++        else if (ctrlId == BRD_SM_CTRL_TEST)
++        {
++            /* Test response to a reported SM error */
++            SM_Error(SM_ERR_GENERIC_ERROR);
++        }
++        else if (ctrlId == BRD_SM_CTRL_TEST_A)
++        {
++            for (uint32_t idx = 0U; idx < numArg; idx++)
++            {
++                rtn[idx] = arg[idx];
++            }
++
++            *numRtn = numArg;
 +        }
 +        else
 +        {
@@ -3086,14 +3201,14 @@ index 0000000..5b36c66
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_control.h b/boards/mcimx95cpl/sm/brd_sm_control.h
 new file mode 100755
-index 0000000..8fa34f1
+index 0000000..c2adaf1
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_control.h
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,226 @@
 +/*
 +** ###################################################################
 +**
-+**     Copyright 2023-2024 NXP
++**     Copyright 2023-2025 NXP
 +**
 +**     Redistribution and use in source and binary forms, with or without modification,
 +**     are permitted provided that the following conditions are met:
@@ -3154,11 +3269,12 @@ index 0000000..8fa34f1
 +#define SM_CONTROLGET          BRD_SM_ControlGet          /*!< Control get */
 +#define SM_CONTROLEXTSET       BRD_SM_ControlExtSet       /*!< Extended control set */
 +#define SM_CONTROLEXTGET       BRD_SM_ControlExtGet       /*!< Extended control get */
++#define SM_CONTROLACTION       BRD_SM_ControlAction       /*!< Control action */
 +#define SM_CONTROLFLAGSSET     BRD_SM_ControlFlagsSet     /*!< Control flags */
 +/** @} */
 +
 +/*! Number of board controls */
-+#define BRD_SM_NUM_CTRL  7UL
++#define BRD_SM_NUM_CTRL  8UL
 +
 +/*! Total number of controls */
 +#define SM_NUM_CTRL  (DEV_SM_NUM_CTRL + BRD_SM_NUM_CTRL)
@@ -3174,6 +3290,7 @@ index 0000000..8fa34f1
 +#define BRD_SM_CTRL_BUTTON      (DEV_SM_NUM_CTRL + 4U)  /*!< PCAL6408A-7 */
 +#define BRD_SM_CTRL_TEST        (DEV_SM_NUM_CTRL + 5U)  /*!< Test */
 +#define BRD_SM_CTRL_PCA2131     (DEV_SM_NUM_CTRL + 6U)  /*!< PCA2131 raw access */
++#define BRD_SM_CTRL_TEST_A      (DEV_SM_NUM_CTRL + 7U)  /*!< Test action */
 +/** @} */
 +
 +/* Types */
@@ -3261,6 +3378,28 @@ index 0000000..8fa34f1
 + */
 +int32_t BRD_SM_ControlExtGet(uint32_t ctrlId, uint32_t addr,
 +    uint32_t numRtn, uint32_t *rtn);
++
++/*!
++ * Perform action on a board control.
++ *
++ * @param[in]     ctrlId   Index of control to take action
++ * @param[in]     action   Action to take
++ * @param[in]     numArg   Number of argument array elements
++ * @param[in]     arg      Pointer to array of argument values
++ * @param[out]    numRtn   Return pointer to number of array elements
++ * @param[out]    rtn      Pointer to array to store return
++ *
++ * This function allows a caller to perform an action on a control. The
++ * actions are device and control specific.
++ *
++ * @return Returns the status (::SM_ERR_SUCCESS = success).
++ *
++ * Return errors (see @ref STATUS "SM error codes"):
++ * - ::SM_ERR_NOT_FOUND: if ctrlId is not valid.
++ * - ::SM_ERR_INVALID_PARAMETERS: if action or numArg are not valid.
++ */
++int32_t BRD_SM_ControlAction(uint32_t ctrlId, uint32_t action,
++    uint32_t numArg, const uint32_t *arg, uint32_t *numRtn, uint32_t *rtn);
 +
 +/*!
 + * Configure notification flags for a control.
@@ -3807,7 +3946,7 @@ index 0000000..64f0c93
 +
 diff --git a/boards/mcimx95cpl/sm/brd_sm_sensor.c b/boards/mcimx95cpl/sm/brd_sm_sensor.c
 new file mode 100755
-index 0000000..92e4154
+index 0000000..4d3ffe8
 --- /dev/null
 +++ b/boards/mcimx95cpl/sm/brd_sm_sensor.c
 @@ -0,0 +1,375 @@
@@ -4153,8 +4292,6 @@ index 0000000..92e4154
 +    /* Check to see if sensorId is within bounds */
 +    if (sensorId < SM_NUM_SENSOR)
 +    {
-+        uint32_t brdSensorId = sensorId - DEV_SM_NUM_SENSOR;
-+
 +        /* Check if device or board */
 +        if (sensorId < DEV_SM_NUM_SENSOR)
 +        {
@@ -4163,6 +4300,8 @@ index 0000000..92e4154
 +        }
 +        else
 +        {
++            uint32_t brdSensorId = sensorId - DEV_SM_NUM_SENSOR;
++
 +            /* Return sensor enable */
 +            *enabled = sensorEnb[brdSensorId];
 +            *timestampReporting = false;

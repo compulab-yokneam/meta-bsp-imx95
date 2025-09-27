@@ -1,20 +1,20 @@
-From 91b96e8e794f14cb0e59533e316275f2f6c64036 Mon Sep 17 00:00:00 2001
+From c6f929b84fde31221f2cb14941ccab014cca0551 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
-Date: Sun, 31 Aug 2025 14:16:39 +0300
-Subject: [PATCH] ompulab: Add configs/other/mx95cplrpmsg.cfg
+Date: Sat, 27 Sep 2025 16:11:23 +0300
+Subject: [PATCH] compulab: Add configs/other/mx95cplrpmsg.cfg
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
- configs/other/mx95cplrpmsg.cfg | 1022 ++++++++++++++++++++++++++++++++
- 1 file changed, 1022 insertions(+)
+ configs/other/mx95cplrpmsg.cfg | 1084 ++++++++++++++++++++++++++++++++
+ 1 file changed, 1084 insertions(+)
  create mode 100755 configs/other/mx95cplrpmsg.cfg
 
 diff --git a/configs/other/mx95cplrpmsg.cfg b/configs/other/mx95cplrpmsg.cfg
 new file mode 100755
-index 0000000..8ed0bc1
+index 0000000..b7d3381
 --- /dev/null
 +++ b/configs/other/mx95cplrpmsg.cfg
-@@ -0,0 +1,1022 @@
+@@ -0,0 +1,1084 @@
 +## ###################################################################
 +##
 +## Copyright 2023-2025 NXP
@@ -47,7 +47,7 @@ index 0000000..8ed0bc1
 +##
 +## ###################################################################
 +
-+# SM configuration file for the MX95 EVK
++# SM configuration file for the MX95 CompuLab SOM
 +
 +MAKE    soc=MIMX95, board=mcimx95cpl, build=gcc_cross
 +DOX     name=MX95CPL, desc="i.MX95 CompuLab Configuration Data"
@@ -367,78 +367,76 @@ index 0000000..8ed0bc1
 +
 +M7P                 OWNER  # CPUs must be first
 +CAN_FD1             OWNER
-+EDMA1_MP            OWNER
-+EDMA1_CH0           OWNER
-+EDMA1_CH1           OWNER
-+EDMA1_CH2           OWNER
-+EDMA1_CH3           OWNER
-+EDMA1_CH4           OWNER
-+EDMA1_CH5           OWNER
-+EDMA1_CH6           OWNER
-+EDMA1_CH7           OWNER
-+EDMA1_CH8           OWNER
-+EDMA1_CH9           OWNER
-+EDMA1_CH10          OWNER
-+EDMA1_CH11          OWNER
-+EDMA1_CH12          OWNER
-+EDMA1_CH13          OWNER
-+EDMA1_CH14          OWNER
-+EDMA1_CH15          OWNER
-+EDMA1_CH16          OWNER
-+EDMA1_CH17          OWNER
-+EDMA1_CH18          OWNER
-+EDMA1_CH19          OWNER
-+EDMA1_CH20          OWNER
-+EDMA1_CH21          OWNER
-+EDMA1_CH22          OWNER
-+EDMA1_CH23          OWNER
-+EDMA1_CH24          OWNER
-+EDMA1_CH25          OWNER
-+EDMA1_CH26          OWNER
-+EDMA1_CH27          OWNER
-+EDMA1_CH28          OWNER
-+EDMA1_CH29          OWNER
-+EDMA1_CH30          OWNER
-+EDMA1_CH31          OWNER
-+EDMA2_MP            OWNER
-+EDMA2_CH0_1         OWNER
-+EDMA2_CH2_3         OWNER
-+EDMA2_CH4_5         OWNER
-+EDMA2_CH6_7         OWNER
-+EDMA2_CH8_9         OWNER
-+EDMA2_CH10_11       OWNER
-+EDMA2_CH12_13       OWNER
-+EDMA2_CH14_15       OWNER
-+EDMA2_CH16_17       OWNER
-+EDMA2_CH18_19       OWNER
-+EDMA2_CH20_21       OWNER
-+EDMA2_CH22_23       OWNER
-+EDMA2_CH24_25       OWNER
-+EDMA2_CH26_27       OWNER
-+EDMA2_CH28_29       OWNER
-+EDMA2_CH30_31       OWNER
-+EDMA2_CH32_33       OWNER
-+EDMA2_CH34_35       OWNER
-+EDMA2_CH36_37       OWNER
-+EDMA2_CH38_39       OWNER
-+EDMA2_CH40_41       OWNER
-+EDMA2_CH42_43       OWNER
-+EDMA2_CH44_45       OWNER
-+EDMA2_CH46_47       OWNER
-+EDMA2_CH48_49       OWNER
-+EDMA2_CH50_51       OWNER
-+EDMA2_CH52_53       OWNER
-+EDMA2_CH54_55       OWNER
-+EDMA2_CH56_57       OWNER
-+EDMA2_CH58_59       OWNER
-+EDMA2_CH60_61       OWNER
-+EDMA2_CH62_63       OWNER
++EDMA1_MP            ACCESS
++EDMA1_CH0           ACCESS
++EDMA1_CH1           ACCESS
++EDMA1_CH2           ACCESS
++EDMA1_CH3           ACCESS
++EDMA1_CH4           ACCESS
++EDMA1_CH5           ACCESS
++EDMA1_CH6           ACCESS
++EDMA1_CH7           ACCESS
++EDMA1_CH8           ACCESS
++EDMA1_CH9           ACCESS
++EDMA1_CH10          ACCESS
++EDMA1_CH11          ACCESS
++EDMA1_CH12          ACCESS
++EDMA1_CH13          ACCESS
++EDMA1_CH14          ACCESS
++EDMA1_CH15          ACCESS
++EDMA1_CH16          ACCESS
++EDMA1_CH17          ACCESS
++EDMA1_CH18          ACCESS
++EDMA1_CH19          ACCESS
++EDMA1_CH20          ACCESS
++EDMA1_CH21          ACCESS
++EDMA1_CH22          ACCESS
++EDMA1_CH23          ACCESS
++EDMA1_CH24          ACCESS
++EDMA1_CH25          ACCESS
++EDMA1_CH26          ACCESS
++EDMA1_CH27          ACCESS
++EDMA1_CH28          ACCESS
++EDMA1_CH29          ACCESS
++EDMA1_CH30          ACCESS
++EDMA1_CH31          ACCESS
++EDMA2_MP            ACCESS
++EDMA2_CH0_1         ACCESS
++EDMA2_CH2_3         ACCESS
++EDMA2_CH4_5         ACCESS
++EDMA2_CH6_7         ACCESS
++EDMA2_CH8_9         ACCESS
++EDMA2_CH10_11       ACCESS
++EDMA2_CH12_13       ACCESS
++EDMA2_CH14_15       ACCESS
++EDMA2_CH16_17       ACCESS
++EDMA2_CH18_19       ACCESS
++EDMA2_CH20_21       ACCESS
++EDMA2_CH22_23       ACCESS
++EDMA2_CH24_25       ACCESS
++EDMA2_CH26_27       ACCESS
++EDMA2_CH28_29       ACCESS
++EDMA2_CH30_31       ACCESS
++EDMA2_CH32_33       ACCESS
++EDMA2_CH34_35       ACCESS
++EDMA2_CH36_37       ACCESS
++EDMA2_CH38_39       ACCESS
++EDMA2_CH40_41       ACCESS
++EDMA2_CH42_43       ACCESS
++EDMA2_CH44_45       ACCESS
++EDMA2_CH46_47       ACCESS
++EDMA2_CH48_49       ACCESS
++EDMA2_CH50_51       ACCESS
++EDMA2_CH52_53       ACCESS
++EDMA2_CH54_55       ACCESS
++EDMA2_CH56_57       ACCESS
++EDMA2_CH58_59       ACCESS
++EDMA2_CH60_61       ACCESS
++EDMA2_CH62_63       ACCESS
 +FSB                 READONLY
 +IRQSTEER_M7         OWNER
-+## For i.MX95 15x15 EVK
-+LPI2C2              OWNER
-+## For i.MX95 19x19 EVK
-+LPI2C4              OWNER
++LPI2C2              ACCESS
++LPI2C4              ACCESS
 +LPIT1               OWNER
 +LPTMR1              OWNER
 +LPTMR2              OWNER
@@ -469,9 +467,7 @@ index 0000000..8ed0bc1
 +PIN_GPIO_IO17       OWNER
 +PIN_GPIO_IO20       OWNER
 +PIN_GPIO_IO26       OWNER
-+# for i.MX95 19x19 EVK
 +PIN_GPIO_IO21       OWNER
-+# for i.MX95 15x15 EVK
 +PIN_GPIO_IO19       OWNER
 +
 +# PDM pins
@@ -479,15 +475,13 @@ index 0000000..8ed0bc1
 +PIN_PDM_BIT_STREAM1 OWNER
 +PIN_PDM_CLK         OWNER
 +
-+# we use one cfg for i.MX95-19x19-EVK and i.MX95-15x15-EVK,
-+# so expose both LPI2C4 and LPI2C2 to M7.
 +# LPI2C4 pins
-+PIN_GPIO_IO30        OWNER
-+PIN_GPIO_IO31        OWNER
++PIN_GPIO_IO30        ACCESS
++PIN_GPIO_IO31        ACCESS
 +
 +# LPI2C2 pins
-+PIN_I2C2_SCL         OWNER
-+PIN_I2C2_SDA         OWNER
++PIN_I2C2_SCL         ACCESS
++PIN_I2C2_SDA         ACCESS
 +# Memory
 +
 +M7MIX               DATA, begin=0x020380000, end=0x02047FFFF
@@ -714,6 +708,74 @@ index 0000000..8ed0bc1
 +DC_YUV2             OWNER
 +DC_YUV3             OWNER
 +DDR_PM              ACCESS
++EDMA1_MP            OWNER
++EDMA1_CH0           OWNER
++EDMA1_CH1           OWNER
++EDMA1_CH2           OWNER
++EDMA1_CH3           OWNER
++EDMA1_CH4           OWNER
++EDMA1_CH5           OWNER
++EDMA1_CH6           OWNER
++EDMA1_CH7           OWNER
++EDMA1_CH8           OWNER
++EDMA1_CH9           OWNER
++EDMA1_CH10          OWNER
++EDMA1_CH11          OWNER
++EDMA1_CH12          OWNER
++EDMA1_CH13          OWNER
++EDMA1_CH14          OWNER
++EDMA1_CH15          OWNER
++EDMA1_CH16          OWNER
++EDMA1_CH17          OWNER
++EDMA1_CH18          OWNER
++EDMA1_CH19          OWNER
++EDMA1_CH20          OWNER
++EDMA1_CH21          OWNER
++EDMA1_CH22          OWNER
++EDMA1_CH23          OWNER
++EDMA1_CH24          OWNER
++EDMA1_CH25          OWNER
++EDMA1_CH26          OWNER
++EDMA1_CH27          OWNER
++EDMA1_CH28          OWNER
++EDMA1_CH29          OWNER
++EDMA1_CH30          OWNER
++EDMA1_CH31          OWNER
++EDMA2_MP            OWNER
++EDMA2_CH0_1         OWNER
++EDMA2_CH2_3         OWNER
++EDMA2_CH4_5         OWNER
++EDMA2_CH6_7         OWNER
++EDMA2_CH8_9         OWNER
++EDMA2_CH10_11       OWNER
++EDMA2_CH12_13       OWNER
++EDMA2_CH14_15       OWNER
++EDMA2_CH16_17       OWNER
++EDMA2_CH18_19       OWNER
++EDMA2_CH20_21       OWNER
++EDMA2_CH22_23       OWNER
++EDMA2_CH24_25       OWNER
++EDMA2_CH26_27       OWNER
++EDMA2_CH28_29       OWNER
++EDMA2_CH30_31       OWNER
++EDMA2_CH32_33       OWNER
++EDMA2_CH34_35       OWNER
++EDMA2_CH36_37       OWNER
++EDMA2_CH38_39       OWNER
++EDMA2_CH40_41       OWNER
++EDMA2_CH42_43       OWNER
++EDMA2_CH44_45       OWNER
++EDMA2_CH46_47       OWNER
++EDMA2_CH48_49       OWNER
++EDMA2_CH50_51       OWNER
++EDMA2_CH52_53       OWNER
++EDMA2_CH54_55       OWNER
++EDMA2_CH56_57       OWNER
++EDMA2_CH58_59       OWNER
++EDMA2_CH60_61_A     OWNER
++EDMA2_CH60_61_B     OWNER
++EDMA2_CH62_63_A     OWNER
++EDMA2_CH62_63_B     OWNER
 +EDMA3_MP            OWNER
 +EDMA3_CH0_1         OWNER
 +EDMA3_CH2_3         OWNER

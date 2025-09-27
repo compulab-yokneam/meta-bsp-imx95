@@ -1,7 +1,7 @@
-From b10ab8347d8daf5a78b2bc9b36bcae748e29646f Mon Sep 17 00:00:00 2001
+From b44eb01a239bc3b60aa860e58f6a1e63c3f59948 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
-Date: Sun, 3 Aug 2025 23:07:41 +0300
-Subject: [PATCH 2/4] compulab: Apply the imx95 CompuLab SOM changes
+Date: Sat, 27 Sep 2025 15:54:55 +0300
+Subject: [PATCH] compulab: Apply the imx95 CompuLab SOM changes
 
 Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
  2 files changed, 34 deletions(-)
 
 diff --git a/boards/mcimx95cpl/pin_mux.c b/boards/mcimx95cpl/pin_mux.c
-index b40d897..797150c 100755
+index d98df87..c15e564 100755
 --- a/boards/mcimx95cpl/pin_mux.c
 +++ b/boards/mcimx95cpl/pin_mux.c
 @@ -50,9 +50,5 @@ void BOARD_InitPins(void)
@@ -18,7 +18,7 @@ index b40d897..797150c 100755
          | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
  #endif
 -
--    /* Configure GPIO1-10 (INT from the PCAL6408A */
+-    /* Configure GPIO1-10 (INT from the PCAL6408A) */
 -    IOMUXC_SetPinMux(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
 -    IOMUXC_SetPinConfig(IOMUXC_PAD_PDM_BIT_STREAM1__GPIO1_IO_BIT10, 0U);
  }
