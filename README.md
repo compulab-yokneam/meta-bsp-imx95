@@ -18,7 +18,7 @@ repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-walnascar 
 * CompuLab:
 ```
 mkdir -p .repo/local_manifests
-wget --directory-prefix .repo/local_manifests https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/walnascar/scripts/meta-bsp-imx95.xml
+wget --directory-prefix .repo/local_manifests https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/walnascar-6.12.20-2.0.0/scripts/meta-bsp-imx95.xml
 repo sync
 ```
 ## Setup Yocto build environment
@@ -46,9 +46,9 @@ The current relase supports free SOC revisions: **A0**, **A1** and **B0**.
  
 i.MX95 allows booting the m7 core at the system start.<br>
 In order to achive that an M7 firmware has to be a part of the imx-boot image.<br>
-The [``M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/conf/machine/compulab-imx95.inc#L34) variable specifies which firmware to use.
+The [``M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.20-2.0.0/conf/machine/compulab-imx95.inc#L34) variable specifies which firmware to use.
 
-In order to use another firmware add this line to the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/templates/local.conf/local.conf.m7.append#L3):
+In order to use another firmware add this line to the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.20-2.0.0/templates/local.conf/local.conf.m7.append#L3):
 ```
 M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp = "imx95-19x19-evk_m7_TCM_rpmsg_lite_str_echo_rtos.bin"
 ```
@@ -61,7 +61,7 @@ The current relase provides two SM configurations: **mx95cpl** and **mx95cplrpms
 |NOTE|Default SM configuration is ``mx95cpl``|
 |---|---|
 
-The systen controller configuration can be chabged by setting a value to ``IMXBOOT_VARIANT`` variable in the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar/templates/local.conf/local.conf.soc-revision.append#L8):<br>
+The systen controller configuration can be chabged by setting a value to ``IMXBOOT_VARIANT`` variable in the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.20-2.0.0/templates/local.conf/local.conf.soc-revision.append#L8):<br>
 
 |Variable|Value|Description|
 |---|---|---|
