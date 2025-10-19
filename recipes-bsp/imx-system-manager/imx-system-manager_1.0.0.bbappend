@@ -7,6 +7,7 @@ SRC_URI += " \
 	file://0004-compulab-board-mcimx95cpl-Use-warm-reset-instead-of-.patch \
 	file://0005-monitor_cmds-Improve-lm-command.patch \
 	file://0006-compulab-Add-configs-other-mx95cplrpmsg.cfg.patch \
+	file://0007-comppulab-Set-BRD_SM_NAME-to-i.MX95-CompuLab-SOM.patch \
 "
 
 PATCHTOOL = "git"
