@@ -51,7 +51,7 @@ The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
   |NOTE|Default SM configuration is ``mx95cpl``|
   |---|---|
 
-  The systen controller configuration can be chabged by setting a value to ``IMXBOOT_VARIANT`` variable in the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.34-2.1.0/templates/local.conf/local.conf.soc-revision.append#L8):<br>
+  The systen controller configuration can be changed by setting a value to ``IMXBOOT_VARIANT`` variable in the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.34-2.1.0/templates/local.conf/local.conf.soc-revision.append#L8):<br>
 
   |Variable|Value|Description|
   |---|---|---|
