@@ -103,7 +103,7 @@ sudo zstd -dc $image_location | sudo dd bs=1M status=progress of=/dev/sdX
 * Update bootloader and the rootfs:
 ```
 cd ${BUILDDIR}/tmp/deploy/images/${XOMPULAB_MACHINE}
-sudo uuu -v -b emmc_all imx-boot-tagged imx-image-full-${COMPULAB_MACHINE}.wic.zst
+sudo uuu -v -bmap -b emmc_all imx-boot-tagged imx-image-full-${COMPULAB_MACHINE}.wic.zst
 ```
 * Update bootloader only:
 ```
