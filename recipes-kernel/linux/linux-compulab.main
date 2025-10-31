@@ -42,10 +42,6 @@ require compulab/${PV}/imx95.inc
 
 LINUX_VERSION_EXTENSION = "-${CL_RELEASE}"
 
-SRC_URI:append = " \
-	file://compulab.cfg \
-"
-
 do_compile:prepend() {
     export SOURCE_DATE_EPOCH=$(date +%s)
 }
