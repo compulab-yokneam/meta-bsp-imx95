@@ -21,7 +21,7 @@ export MACHINE=ucm-imx95
 
 * Clone the source code:
 ```
-git clone -b linux-compulab_v6.6.36 https://github.com/compulab-yokneam/linux-compulab.git
+git clone -b linux-compulab_v6.12.34 https://github.com/compulab-yokneam/linux-compulab.git
 cd linux-compulab
 ```
 
@@ -29,7 +29,7 @@ cd linux-compulab
 
 * Apply the default CompuLab config:
 ```
-make compulab-mx95_defconfig compulab.config
+make compulab-mx95_defconfig
 ```
 
 * Change the default CompuLab configuration:

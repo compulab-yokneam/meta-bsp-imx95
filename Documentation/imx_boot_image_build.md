@@ -1,6 +1,6 @@
 # Building Boot Firmware 
 
-## [External Build](https://github.com/compulab-yokneam/u-boot-compulab/blob/u-boot-compulab_v2024.04/README.md)
+## [External Build](https://github.com/compulab-yokneam/u-boot-compulab/blob/u-boot-compulab_v2025.04/README.md)
 
 ## Internal Build
 
