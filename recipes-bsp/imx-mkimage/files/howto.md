@@ -33,7 +33,7 @@ make SOC=iMX95 REV=@@IMX_SOC_REV@@ OEI=YES LPDDR_TYPE=lpddr5 flash_all
 
 * imx-boot arm Cortex-M7 under control of Cortex-A55 U-Boot/Linux
 ```
-make SOC=iMX95 REV=@@IMX_SOC_REV@@ OEI=YES LPDDR_TYPE=lpddr5 flash_lpboot_sm_a55
+make SOC=iMX95 REV=@@IMX_SOC_REV@@ OEI=YES LPDDR_TYPE=lpddr5 flash_a55
 ```
 
 * Boot Env for Cortex-M7 under Linux control
