@@ -21,4 +21,5 @@ do_deploy:append:compulab-mx95() {
     ln -sf ${M4_DEFAULT_IMAGE_MX95} ${DEPLOYDIR}/${BOOT_TOOLS}/m7_image.bin
 
     sed -i "s/@@IMX_SOC_REV@@/${IMX_SOC_REV}/g" ${DEPLOYDIR}/${BOOT_TOOLS}/howto.md
+    sed -i "s/@@IMX_SOC_REV@@/${IMX_SOC_REV}/g" ${DEPLOYDIR}/${BOOT_TOOLS}/source.me
 }
