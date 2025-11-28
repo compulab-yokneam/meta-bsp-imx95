@@ -5,12 +5,6 @@
 * Preferred OS for build host is Ubuntu 22.04. It can be utilized with [Docker](https://github.com/compulab-yokneam/yocker)
 
 # Configuring the build
- * Set a CompuLab machine:
-
-   | Machine | Command Line |
-   | --- | --- |
-   |ucm-imx95|```export COMPULAB_MACHINE=ucm-imx95```|
-
 ## Setup Yocto environment
   * Download NXP and CompuLab source:
     ```
