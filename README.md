@@ -22,6 +22,17 @@
     ```
 
 ## Pre-build customization (optional)
+* Set a correct dram configuration value:<br>
+The current relase supports: **D4**, and **D8**.
+
+   |NOTE|Default configuration is ``D8``|
+   | --- | --- |
+
+   |DRAM Configuration|``conf/local.conf`` string|
+   |---|---|
+   |D4| DRAM_CONF = "D4"|
+   |D8| DRAM_CONF = "D8"|
+   
 * Set a correct imx soc revision:<br>
 The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
 
