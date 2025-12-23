@@ -15,24 +15,27 @@ mkdir -p compulab-kernel/linux-compulab-build && cd compulab-kernel
 ```
 
 * Set a machine:
-```
-export MACHINE=ucm-imx95
-```
+
+|Machine|Command Line|
+|---|---|
+|ucm-imx95|```export MACHINE=ucm-imx95 LBRANCH=v6.6.36```
+|mcm-imx95|```export MACHINE=mcm-imx95-sbc LBRANCH=v6.6.52```
 
 * Clone the source code:
 ```
-git clone -b linux-compulab_v6.6.36 https://github.com/compulab-yokneam/linux-compulab.git
+git clone --single-branch -b linux-compulab_${LBRANCH} https://github.com/compulab-yokneam/linux-compulab.git
 cd linux-compulab
+unset LBRANCH
 ```
 
 ### Compile the Kernel
 
 * Apply the default CompuLab config:
 ```
-make compulab-mx95_defconfig compulab.config
+make compulab-mx95_defconfig
 ```
 
-* Change the default CompuLab configuration:
+* Applay desired modifications:
 ```
 make menuconfig
 ```
