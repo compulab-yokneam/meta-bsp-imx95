@@ -1,0 +1,68 @@
+#!/bin/bash
+
+PID_FILE=/var/run/cl-camera.pid
+camera_stop() {
+    if [[ -f ${PID_FILE} ]];then
+        PID=$(cat ${PID_FILE})
+        kill -9 ${PID}
+        rm -rf ${PID_FILE}
+        exit 0
+    fi
+}
+
+camera_start() {
+    if [ "${CAMERA}" = "fakecamera" ];then
+        SRC="videotestsrc"
+    else
+        SRC="libcamerasrc camera-name=${CAMERA}"
+    fi
+
+    camera_start_${MODE}
+
+    PID=$!
+    echo ${PID} > ${PID_FILE}
+}
+
+camera_start_stream() {
+    SINK="autovideosink"
+    GST_COMMAND="${GST} ${SRC} ! "video/x-raw,width=1280,height=720,format=${FORMAT}" ! clockoverlay ! ${SINK}"
+cat << eof | tee /tmp/camera_start_stream.cmd > /dev/null
+${GST_COMMAND}
+eof
+    ${GST_COMMAND} &>/dev/null &
+}
+
+camera_start_image() {
+    local image_file="/tmp/singel_image_$(date +%F_%X | sed 's/[-:]//g').jpg"
+    ${GST} ${SRC} num-buffers=1 ! "video/x-raw,width=1280,height=720,format=${FORMAT}" ! jpegenc ! filesink location=${image_file}
+    ${GST} filesrc location=${image_file} ! jpegdec ! imagefreeze ! autovideosink &
+}
+
+camera_get() {
+	local _CAMERA=( $(for i in $(seq 1 4);do cam -c ${i}  2>&1 | awk '(/Using camera/)&&($0=$3)'; done;  cat <<< " fakecamera") )
+cat << eof
+Available sensors and commands:
+------------------------------
+eof
+    for c in ${!_CAMERA[@]};do
+    [[ ${c} -eq ${sensor} ]] && default="*" || default=""
+cat << eom
+	$c) ${_CAMERA[$c]} ; sensor=$c cl-camera ${default}
+eom
+    done
+    export CAMERA=${_CAMERA[${sensor}]}
+}
+
+camera_main() {
+    camera_stop
+    camera_get
+    CAMERA=${CAMERA} MODE=${MODE} camera_start
+}
+
+MODE=${MODE:-stream}
+[[ ${MODE} = 'stream' ]] || MODE=image
+FORMAT=${FORMAT:-NV12}
+sensor=${sensor:-0}
+GST="gst-launch-1.0 --no-position"
+
+camera_main
