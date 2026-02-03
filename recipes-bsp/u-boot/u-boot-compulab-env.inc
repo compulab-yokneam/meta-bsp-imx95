@@ -1,15 +1,12 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/u-boot-compulab-env/imx95:"
-
-SRC_URI:append = " \
-	file://fw_env.config \
-"
+INSTALL_DIR = "/usr/local/bin"
 
 do_install:append () {
 
 	install -d ${D}/etc/
-	install -m 0644 ${WORKDIR}/fw_env.config  ${D}/etc/fw_env.config
+	ln -sf /sys/firmware/devicetree/base/fw_env/fw_env.config ${D}${sysconfdir}/fw_env.config
+	ln -sf /sys/firmware/devicetree/base/fw_env/default_env ${D}${sysconfdir}/u-boot-initial-env
 }
 
 UBOOT_INITIAL_ENV = "u-boot-initial-env"
-FILES:${PN}-env += "/etc/*"
+FILES:${PN}-env += "/etc/* ${INSTALL_DIR}/*"
 RDEPENDS:${PN}-env += "bash"
