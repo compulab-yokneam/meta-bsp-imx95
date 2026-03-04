@@ -56,3 +56,11 @@ PREFERRED_RROVIDER_u-boot-fw-utils = "libubootenv-bin"
 DISTRO_FEATURES:remove = "sysvinit"
 
 IMX_DEFAULT_BSP = "nxp"
+
+KERNEL_DEVICETREE:append = " \
+    compulab/imx95-lvds.dtbo \
+    compulab/imx95-wm8962.dtbo \
+    compulab/imx95-rpmsg.dtbo \
+    compulab/imx95-csi1-ap1302.dtbo \
+    compulab/imx95-csi2-ap1302.dtbo \
+"
