@@ -4,11 +4,31 @@ PID_FILE=/var/run/cl-camera.pid
 camera_stop() {
     if [[ -f ${PID_FILE} ]];then
         PID=$(cat ${PID_FILE})
-        kill -9 ${PID}
+        pkill -P ${PID}
         rm -rf ${PID_FILE}
         exit 0
     fi
 }
+
+camera_imx_env() {
+cat << eof
+export LIBCAMERA_IPA_MODULE_PATH='/usr/lib/libcamera/ipa-nxp-neo-uguzzi/'
+export LIBCAMERA_PIPELINES_MATCH_LIST='nxp/neo,imx8-isi,uvc'
+eof
+}
+declare -A camera_env
+camera_env['imx219']="camera_imx_env"
+camera_env['imx477']="camera_imx_env"
+
+camera_rt_env() {
+    local camer_rt_env_func=${camera_env[${CHIP}]:-"true"}
+    ${camer_rt_env_func}
+}
+
+declare -A video_param
+#video_param['imx219']="video/x-raw , width=1920, height=1080, format=YUY2"
+video_param['imx219']="video/x-raw , width=3280, height=2464, format=YUY2"
+video_param['imx477']="video/x-raw , width=3840, height=2160, format=YUY2"
 
 camera_start() {
     if [ "${CAMERA}" = "fakecamera" ];then
@@ -17,29 +37,33 @@ camera_start() {
         SRC="libcamerasrc camera-name=${CAMERA}"
     fi
 
-    camera_start_${MODE}
+    VIDEO_PARAM=${video_param[${CHIP}]:-"video/x-raw,width=1280,height=720,format=\${FORMAT}"}
+    VIDEO_PARAM=${VIDEO_PARAM} SRC=${SRC} CHIP=${CHIP} camera_start_${MODE}
 
     PID=$!
     echo ${PID} > ${PID_FILE}
 }
 
+CAMERA_START_STREAM_CMD=/tmp/camera_start_stream.cmd
 camera_start_stream() {
     SINK="autovideosink"
-    GST_COMMAND="${GST} ${SRC} ! "video/x-raw,width=1280,height=720,format=${FORMAT}" ! clockoverlay ! ${SINK}"
-cat << eof | tee /tmp/camera_start_stream.cmd > /dev/null
+    GST_COMMAND="${GST} ${SRC} ! ${VIDEO_PARAM} ! clockoverlay ! ${SINK}"
+cat << eof | tee ${CAMERA_START_STREAM_CMD} > /dev/null
+$(camera_rt_env)
 ${GST_COMMAND}
 eof
-    ${GST_COMMAND} &>/dev/null &
+    chmod a+x ${CAMERA_START_STREAM_CMD}
+    ${CAMERA_START_STREAM_CMD} &>/dev/null &
 }
 
 camera_start_image() {
     local image_file="/tmp/singel_image_$(date +%F_%X | sed 's/[-:]//g').jpg"
-    ${GST} ${SRC} num-buffers=1 ! "video/x-raw,width=1280,height=720,format=${FORMAT}" ! jpegenc ! filesink location=${image_file}
+    ${GST} ${SRC} num-buffers=1 ! ${VIDEO_PARAM} ! jpegenc ! filesink location=${image_file}
     ${GST} filesrc location=${image_file} ! jpegdec ! imagefreeze ! autovideosink &
 }
 
 camera_get() {
-	local _CAMERA=( $(for i in $(seq 1 4);do cam -c ${i}  2>&1 | awk '(/Using camera/)&&($0=$3)'; done;  cat <<< " fakecamera") )
+    local _CAMERA=( $(for i in $(seq 1 4);do cam -c ${i}  2>&1 | awk '(/Using camera/)&&($0=$3)'; done;  cat <<< " fakecamera") )
 cat << eof
 Available sensors and commands:
 ------------------------------
@@ -47,10 +71,11 @@ eof
     for c in ${!_CAMERA[@]};do
     [[ ${c} -eq ${sensor} ]] && default="*" || default=""
 cat << eom
-	$c) ${_CAMERA[$c]} ; sensor=$c cl-camera ${default}
+    $c) ${_CAMERA[$c]} ; sensor=$c cl-camera ${default}
 eom
     done
     export CAMERA=${_CAMERA[${sensor}]}
+    export CHIP=$(basename ${CAMERA} | sed 's/@.*$//g')
 }
 
 camera_main() {
