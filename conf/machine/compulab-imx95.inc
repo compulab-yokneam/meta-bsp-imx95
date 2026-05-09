@@ -63,4 +63,6 @@ KERNEL_DEVICETREE:append = " \
     compulab/imx95-rpmsg.dtbo \
     compulab/imx95-csi1-ap1302.dtbo \
     compulab/imx95-csi2-ap1302.dtbo \
+    compulab/imx95-csi1-imx219.dtbo \
+    compulab/imx95-csi1-imx477.dtbo \
 "
