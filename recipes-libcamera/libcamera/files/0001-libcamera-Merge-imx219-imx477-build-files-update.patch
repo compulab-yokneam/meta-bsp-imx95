@@ -1,0 +1,297 @@
+From 5702ca9edd3f09f6ddaa7b29eb9b7c087b89e1e4 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Fri, 8 May 2026 17:23:12 +0300
+Subject: [PATCH] libcamera: Merge imx219 imx477 build files update
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ .../nxp/cam_helper/camera_helper_imx219.cpp   | 42 ++++++++++
+ .../nxp/cam_helper/camera_helper_imx477.cpp   | 61 +++++++++++++++
+ src/ipa/nxp/cam_helper/meson.build            |  2 +
+ src/ipa/nxp/neo/data/imx219.yaml              | 39 ++++++++++
+ src/ipa/nxp/neo/data/imx477.yaml              | 78 +++++++++++++++++++
+ src/ipa/nxp/neo/data/meson.build              |  4 +-
+ 6 files changed, 225 insertions(+), 1 deletion(-)
+ create mode 100644 src/ipa/nxp/cam_helper/camera_helper_imx219.cpp
+ create mode 100644 src/ipa/nxp/cam_helper/camera_helper_imx477.cpp
+ create mode 100644 src/ipa/nxp/neo/data/imx219.yaml
+ create mode 100644 src/ipa/nxp/neo/data/imx477.yaml
+
+diff --git a/src/ipa/nxp/cam_helper/camera_helper_imx219.cpp b/src/ipa/nxp/cam_helper/camera_helper_imx219.cpp
+new file mode 100644
+index 00000000..840573f4
+--- /dev/null
++++ b/src/ipa/nxp/cam_helper/camera_helper_imx219.cpp
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: LGPL-2.1-or-later */
++/* Copyright (C) 2021, Google Inc.
++ *
++ * camera_helper_imx219.c
++ * Helper class that performs sensor-specific parameter computations
++ * for Sony IMX 219 sensor
++ * Copyright 2025 NXP
++ */
++
++#include <cmath>
++#include "camera_helper.h"
++#include <libcamera/base/log.h>
++
++namespace libcamera {
++
++LOG_DECLARE_CATEGORY(NxpCameraHelper)
++
++namespace nxp {
++
++class CameraHelperImx219 : public CameraHelper
++{
++public:
++	uint32_t gainCode(double gain) const override;
++	double gain(uint32_t gainCode) const override;
++};
++
++
++uint32_t CameraHelperImx219::gainCode(double gain) const
++{
++	return (uint32_t)(256 - 256 / gain);
++}
++
++double CameraHelperImx219::gain(uint32_t gainCode) const
++{
++	return 256.0 / (256 - gainCode);
++}
++
++REGISTER_CAMERA_HELPER("imx219", CameraHelperImx219)
++
++} /* namespace nxp */
++
++} /* namespace libcamera */
+diff --git a/src/ipa/nxp/cam_helper/camera_helper_imx477.cpp b/src/ipa/nxp/cam_helper/camera_helper_imx477.cpp
+new file mode 100644
+index 00000000..baec687f
+--- /dev/null
++++ b/src/ipa/nxp/cam_helper/camera_helper_imx477.cpp
+@@ -0,0 +1,61 @@
++/* SPDX-License-Identifier: LGPL-2.1-or-later */
++/* Copyright (C) 2021, Google Inc.
++ * camera_helper_imx477.c
++ * Helper class that performs sensor-specific parameter computations
++ * for Sony IMX477 sensor
++ * Copyright 2025 NXP
++ */
++
++#include <cmath>
++#include <linux/v4l2-controls.h>
++#include <libcamera/base/log.h>
++#include "camera_helper.h"
++
++namespace libcamera {
++
++LOG_DECLARE_CATEGORY(NxpCameraHelper)
++
++namespace nxp {
++
++class CameraHelperimx477 : public CameraHelper
++{
++public:
++
++	uint32_t gainCode(double gain) const override;
++	double gain(uint32_t gainCode) const override;
++};
++
++#define IMX477_ANA_GAIN_MAX  976
++
++uint32_t CameraHelperimx477::gainCode(double gain) const
++{
++	uint32_t code;
++
++	LOG(NxpCameraHelper, Debug) << " -> Gain " << gain;
++	if (gain < 1.0)
++		gain = 1.0;
++
++	code = (static_cast<int>(1024 - (1024/gain)));
++	LOG(NxpCameraHelper, Debug) << "-> Gain Code" << code;
++
++	return code;
++}
++
++double CameraHelperimx477::gain(uint32_t gainCode) const
++{
++	double gain;
++
++	LOG(NxpCameraHelper, Debug) << "-> Gain Code" << gainCode;
++
++	if (gainCode > (IMX477_ANA_GAIN_MAX) )
++		gainCode = IMX477_ANA_GAIN_MAX;
++	gain = 1024.0 / (1024 - gainCode);
++	LOG(NxpCameraHelper, Debug) << "<- Gain " << gain;
++	return gain;
++}
++
++REGISTER_CAMERA_HELPER("imx477", CameraHelperimx477)
++
++} /* namespace nxp */
++
++} /* namespace libcamera */
+diff --git a/src/ipa/nxp/cam_helper/meson.build b/src/ipa/nxp/cam_helper/meson.build
+index 9a1bcd34..77e1ad70 100644
+--- a/src/ipa/nxp/cam_helper/meson.build
++++ b/src/ipa/nxp/cam_helper/meson.build
+@@ -10,6 +10,8 @@ nxp_ipa_cam_helper_sources = files([
+     'camera_helper_os08a20.cpp',
+     'camera_helper_ov5640.cpp',
+     'camera_helper_ox05b1s.cpp',
++    'camera_helper_imx219.cpp',
++    'camera_helper_imx477.cpp',
+     'md_parser_ox.cpp',
+ ])
+ 
+diff --git a/src/ipa/nxp/neo/data/imx219.yaml b/src/ipa/nxp/neo/data/imx219.yaml
+new file mode 100644
+index 00000000..2f37157e
+--- /dev/null
++++ b/src/ipa/nxp/neo/data/imx219.yaml
+@@ -0,0 +1,39 @@
++# SPDX-License-Identifier: CC0-1.0
++%YAML 1.1
++---
++version: 1
++algorithms:
++  - Awb:
++  - Agc:
++  - Drc:
++      # DRC Global Tonemap[1-416] u16 (8.8 format)
++      # This global LUT values are universal values which can apply to
++      # all sensors no matter their dynamic range.
++      gbl-lut: [
++                 4051, 4051, 3444, 3132, 2927, 2778, 2662, 2567, 2488, 2421, 2362, 2309, 2263, 2221, 2182, 2147,
++                 2115, 2085, 2058, 2032, 2007, 1985, 1963, 1943, 1923, 1905, 1888, 1871, 1855, 1840, 1825, 1811,
++                 1798, 1785, 1773, 1761, 1749, 1738, 1727, 1716, 1706, 1696, 1687, 1678, 1669, 1660, 1651, 1643,
++                 1635, 1627, 1619, 1612, 1604, 1597, 1590, 1584, 1577, 1570, 1564, 1558, 1552, 1546, 1540, 1534,
++                 1528, 1517, 1507, 1496, 1487, 1477, 1468, 1459, 1450, 1442, 1434, 1426, 1418, 1411, 1404, 1397,
++                 1390, 1383, 1376, 1370, 1364, 1358, 1352, 1346, 1340, 1335, 1329, 1324, 1319, 1314, 1309, 1304,
++                 1299, 1290, 1281, 1272, 1264, 1256, 1248, 1240, 1233, 1226, 1219, 1212, 1206, 1199, 1193, 1187,
++                 1181, 1176, 1170, 1165, 1159, 1154, 1149, 1144, 1139, 1135, 1130, 1125, 1121, 1117, 1112, 1108,
++                 1104, 1096, 1089, 1081, 1074, 1067, 1061, 1054, 1048, 1042, 1036, 1030, 1025, 1019, 1014, 1009,
++                 1004, 999, 994, 990, 985, 981, 977, 972, 968, 964, 960, 957, 953, 949, 946, 942,
++                 939, 932, 925, 919, 913, 907, 901, 896, 891, 886, 881, 876, 871, 866, 862, 858,
++                 853, 849, 845, 841, 838, 834, 830, 827, 823, 820, 816, 813, 810, 807, 804, 801,
++                 798, 792, 786, 781, 776, 771, 766, 762, 757, 753, 748, 744, 740, 736, 733, 729,
++                 725, 722, 718, 715, 712, 709, 706, 703, 700, 697, 694, 691, 688, 686, 683, 681,
++                 678, 673, 668, 664, 660, 655, 651, 647, 643, 640, 636, 633, 629, 626, 623, 620,
++                 617, 614, 611, 608, 605, 602, 600, 597, 595, 592, 590, 587, 585, 583, 581, 578,
++                 576, 572, 568, 564, 561, 557, 554, 550, 547, 544, 541, 538, 535, 532, 529, 527,
++                 524, 521, 519, 517, 514, 512, 510, 508, 505, 503, 501, 499, 497, 495, 493, 492,
++                 490, 486, 483, 480, 476, 473, 470, 468, 465, 462, 460, 457, 455, 452, 450, 448,
++                 445, 443, 441, 439, 437, 435, 433, 431, 430, 428, 426, 424, 423, 421, 419, 418,
++                 416, 413, 410, 408, 405, 402, 400, 397, 395, 393, 391, 388, 386, 384, 382, 380,
++                 378, 377, 375, 373, 371, 370, 368, 367, 365, 364, 362, 361, 359, 358, 356, 355,
++                 354, 351, 349, 346, 344, 342, 340, 338, 336, 334, 332, 330, 328, 327, 325, 323,
++                 322, 320, 319, 317, 316, 314, 313, 312, 310, 309, 308, 306, 305, 304, 303, 302,
++                 301, 298, 296, 294, 292, 291, 289, 287, 285, 284, 282, 281, 279, 278, 276, 275,
++                 273, 272, 271, 269, 268, 267, 266, 265, 264, 263, 261, 260, 259, 258, 257, 256,
++	       ]
+diff --git a/src/ipa/nxp/neo/data/imx477.yaml b/src/ipa/nxp/neo/data/imx477.yaml
+new file mode 100644
+index 00000000..a9b615cb
+--- /dev/null
++++ b/src/ipa/nxp/neo/data/imx477.yaml
+@@ -0,0 +1,78 @@
++# SPDX-License-Identifier: CC0-1.0
++%YAML 1.1
++---
++version: 1
++algorithms:
++  - Awb:
++  - BlackLevelCorrection:
++      # Configured in sensor at 64
++      # Listed value is offset for a 12-bit camera pixel format, using libcamera
++      # representation for BLC offset that 16-bit signed: 64 * 2^(16 - 12)
++      reference-bitdepth: 12
++      R: 1024
++      Gr: 1024
++      Gb: 1024
++      B: 1024
++  - Agc:
++  - Drc:
++      # Global DRC control mode. Select among the following options:
++      # 0 - copy. Data is copied from input to output of the DRC block, 
++      #     no dynamic range compression is done (default)
++      # 1 - pre-configured. LUT with 416 entries needs to be specified in this config file
++      #     under 'gbl-lut'. If not configured, falls back to mode 0.
++      # 2 - dynamic. LUT determined per frame according to input data. 
++      gbl-mode: 0
++  - Ccm:
++      ccms: [
++          {
++              ct: 2630,
++              ccm:
++              [
++                  2.500, -2.207, 0.707,
++                  -0.281, 0.500, 0.781,
++                  -0.051, -2.383, 3.434,
++              ],
++              offsets: [ 0, 0, 0 ]
++          },
++          {
++              ct: 2901,
++              ccm:
++              [
++                  2.203, -1.547, 0.344,
++                  -0.277, 0.973, 0.305,
++                  0.066, -1.926, 2.859,
++              ],
++              offsets: [ 0, 0, 0 ]
++          },
++          {
++              ct: 4284,
++              ccm:
++              [
++                  2.090, -0.945, -0.145,
++                  -0.258, 1.340, -0.082,
++                  0.047, -1.281, 2.234,
++              ],
++              offsets: [ 0, 0, 0 ]
++          },
++          {
++              ct: 5446,
++              ccm:
++              [
++                  2.117, -1.023, -0.094,
++                  -0.188, 1.391, -0.203,
++                  0.074, -1.031, 1.957,
++              ],
++              offsets: [ 0, 0, 0 ]
++          },
++          {
++              ct: 6439,
++              ccm:
++              [
++                  2.121, -0.933, -0.188,
++                  -0.141, 1.414, -0.273,
++                  0.078, -0.977, 1.898,
++              ],
++              offsets: [ 0, 0, 0 ]
++          },
++      ]
++...
+diff --git a/src/ipa/nxp/neo/data/meson.build b/src/ipa/nxp/neo/data/meson.build
+index eaea4bea..259efd11 100644
+--- a/src/ipa/nxp/neo/data/meson.build
++++ b/src/ipa/nxp/neo/data/meson.build
+@@ -5,9 +5,11 @@ conf_files = files([
+     'os08a20.yaml',
+     'ov5640.yaml',
+     'ox05b1s.yaml',
++    'imx219.yaml',
++    'imx477.yaml',
+     'uncalibrated.yaml',
+ ])
+ 
+ install_data(conf_files,
+              install_dir : ipa_data_dir / 'nxp' / 'neo',
+-             install_tag : 'runtime')
+\ No newline at end of file
++             install_tag : 'runtime')
+-- 
+2.34.1
+
