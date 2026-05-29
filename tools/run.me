@@ -6,6 +6,9 @@ repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-whinlatter
 wget --directory-prefix .repo/local_manifests https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/whinlatter-6.18.2-1.0.0/scripts/meta-bsp-imx95.xml
 repo sync
 
+P="${BSP}/sources/meta-bsp-imx95/tools/p"
+git -C ${BSP}/sources/bitbake apply ${P}/crates.io-data-access-policy.patch
+
 cat << eof > .env
 MACHINE=${COMPULAB_MACHINE} source compulab-setup-env build-${COMPULAB_MACHINE}
 eof

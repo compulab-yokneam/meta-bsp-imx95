@@ -8,7 +8,7 @@
 ## Setup Yocto environment
   * Download NXP and CompuLab source:
     ```
-    bash <(curl -L https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/refs/heads/walnascar-6.12.34-2.1.0/tools/run.me)
+    source <(curl -L https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/refs/heads/whinlatter-6.18.2-1.0.0/tools/run.me)
     ```
   * Issue this command to init Yocto build environment:
     ```

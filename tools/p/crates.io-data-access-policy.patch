@@ -1,0 +1,146 @@
+From patchwork Mon Apr 27 13:51:23 2026
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Johan Anderholm <johanam@axis.com>
+X-Patchwork-Id: 87005
+Return-Path: <johan.anderholm@axis.com>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 229CCFF8860
+	for <webhook@archiver.kernel.org>; Mon, 27 Apr 2026 13:51:46 +0000 (UTC)
+Received: from DU2PR03CU002.outbound.protection.outlook.com
+ (DU2PR03CU002.outbound.protection.outlook.com [52.101.65.20])
+ by mx.groups.io with SMTP id smtpd.msgproc01-g2.45374.1777297901642173937
+ for <bitbake-devel@lists.openembedded.org>;
+ Mon, 27 Apr 2026 06:51:42 -0700
+Authentication-Results: mx.groups.io;
+ dkim=fail reason="dkim: body hash did not verify" header.i=@axis.com
+ header.s=selector1 header.b=TO6gvicA;
+ spf=pass (domain: axis.com, ip: 52.101.65.20,
+ mailfrom: johan.anderholm@axis.com)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=YZ9n+XHRqzYlWKo38v6zO8AH8uiooAaO7B/O/i0NrM4U0aMBhisW2c8QoxrzgOpeJ3qN4fu/Mw9+hD1+Focpp/K5jLx6XWSKgz7khAn1JA4MIO1HDhF8BjHGf0KTT0UO2q357JJkYQ19DJITcM03gUR6ejmC0tijna3zfajRi9/+5pWD0inAhEVbnZBOccuBnmAb8SgNbuALOttZxM4UVtREEgvLGnpsgrxO4BXBv65TxVH0Pv88GBmoHbDTTpEov6sk1OT+LBIiaZ8T9HBqJSg/R+LFUqxABNLpORXnd1X0TwEIoG1kQM1Ocw9UbX2/6Z9Hs46hFaN4D0qFK6NIdg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=nQcBZT22wXDSYkp0x2q+oe0zd/DW71OfyXdlJPelFw0=;
+ b=KEsSqw3qnlR4X97HsSQgXZtzM8LCb6C6ok8Wd7YYF00ZN0UhNEx/ST4ewzOCuU1/4Uo7laSM/paFCKHGj06dny+HiORCLEhWb8J6Yc4dUBELnKlAK2Z+q1Sdp8uMGiBomlXex/HS116ZHEHyr51P600GQ6/EyQUxgGZB4SlrFp/4BsqMilMGweiB1q86TZRXTEfzDYrhhNu3receYmgjmnhErhRNiDfxUqbSMaZIBLzHjZAPr5Y6DGfxSNHt33MOaIWeC+JDt+hf6H/XCiR6aBmmp8KtHDYJewaF0B3RL2LPz2Wt7hhjgPLHBfQ6hee5QgBMnlQRo/RQLwrM03wJxw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 195.60.68.100) smtp.rcpttodomain=lists.openembedded.org
+ smtp.mailfrom=axis.com; dmarc=pass (p=none sp=none pct=100) action=none
+ header.from=axis.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=nQcBZT22wXDSYkp0x2q+oe0zd/DW71OfyXdlJPelFw0=;
+ b=TO6gvicAE9+jmqTap1xfUMenhBbJTV7McgWlX2lX6nwWD9ABbUiyqKSCmn9/u9ObRpjmkGaSbLkFJQGciLkLcSn5ZRcJozAAMFTVyXRaef/oqxTtqin5VYgFQOve6D4TC3VtmuHQYXRRt+pPU0lIHcAe7FQ5/l3bugZF9WLy9nw=
+Received: from CWLP265CA0510.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:18b::10)
+ by PAVPR02MB9112.eurprd02.prod.outlook.com (2603:10a6:102:324::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Mon, 27 Apr
+ 2026 13:51:34 +0000
+Received: from AMS0EPF0000019D.eurprd05.prod.outlook.com
+ (2603:10a6:400:18b:cafe::b3) by CWLP265CA0510.outlook.office365.com
+ (2603:10a6:400:18b::10) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.26 via Frontend Transport; Mon,
+ 27 Apr 2026 13:51:33 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
+ smtp.mailfrom=axis.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=axis.com;
+Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
+ 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
+ client-ip=195.60.68.100; helo=mail.axis.com; pr=C
+Received: from mail.axis.com (195.60.68.100) by
+ AMS0EPF0000019D.mail.protection.outlook.com (10.167.16.249) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9846.18 via Frontend Transport; Mon, 27 Apr 2026 13:51:33 +0000
+Received: from SE-MAILARCH01W.axis.com (10.20.40.15) by se-mail10w.axis.com
+ (10.20.40.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.1748.39; Mon, 27 Apr
+ 2026 15:51:31 +0200
+Received: from se-mail10w.axis.com (10.20.40.10) by SE-MAILARCH01W.axis.com
+ (10.20.40.15) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.61; Mon, 27 Apr
+ 2026 15:51:31 +0200
+Received: from se-intmail02x.se.axis.com (10.4.0.28) by se-mail10w.axis.com
+ (10.20.40.10) with Microsoft SMTP Server id 15.2.1748.39 via Frontend
+ Transport; Mon, 27 Apr 2026 15:51:31 +0200
+Received: from bldod238s600920-7.se.axis.com (bldod238s600920-7.se.axis.com
+ [10.64.16.16])
+	by se-intmail02x.se.axis.com (Postfix) with ESMTP id A9EB02DF9
+	for <bitbake-devel@lists.openembedded.org>;
+ Mon, 27 Apr 2026 15:51:31 +0200 (CEST)
+Received: by bldod238s600920-7.se.axis.com (Postfix, from userid 20481)
+	id A1A29609AE2B; Mon, 27 Apr 2026 15:51:31 +0200 (CEST)
+From: Johan Anderholm <johanam@axis.com>
+To: <bitbake-devel@lists.openembedded.org>
+Subject: [PATCH 1/1] fetch2/crate: use CDN for fetching crates
+Date: Mon, 27 Apr 2026 15:51:23 +0200
+Message-ID: <20260427135122.1504143-2-johanam@axis.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260427135122.1504143-1-johanam@axis.com>
+References: <20260427135122.1504143-1-johanam@axis.com>
+MIME-Version: 1.0
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AMS0EPF0000019D:EE_|PAVPR02MB9112:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2e7fa5ea-9889-40c0-42ee-08dea46417db
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 
+	BCL:0;ARA:13230040|82310400026|36860700016|376014|1800799024|56012099003|22082099003|18002099003|13003099007;
+X-Microsoft-Antispam-Message-Info: 
+	os9TLsLf3iko06xkR9Rbx63WaP47FTTOijPuMnea3NRAUiOhWXX2C1xsUSAPuKHR6LVsJadbB036NCsf/n5uR2tTVilvPffiQU67fUwZ+NMp0+VPuKMfrHxRR6KIJG/1Ws8MfRjhJ6fudPiKpm91Gnaz3X9y2qvcYvYRf+s+ruZjsn/9DJFNDRRMF3heoiipNLAcM0bfTSpz68q2bAHAtvpos9MsyHN6B/magh2EWqczFShPIlj4OxpnCcEZspLER5uFqD7Vjf+jA2J2ch7O0SGeDcMiNos6WvbCfPPIMppk9rmqK9Jy7IdptO+57jgJ0591dQIjFDHgwI/Ubh8FMBjsr2Dr0dvAX7D0q/3kA/eOhJFNqZxQKdIt0HAmwHg3G73NTOwo/QmSukQrvB20L496WX8iY7JcAhDf7LNLBx/D2icG9xq5fb9orRUGarvzer8wsb6a5f+idK/QnqpJFcAxzqNtqCoqW3TY0fOYPs0g4OhyIsDE2d3evol18R3Dc1xQz25uxfLcSK1MdOIQRFzU2y7bNFnSj5EXudv5C2NL4vlXNYKKvSTE/PCtZjdKVABELHKX3keETlEAxuY9kASqWSKbsznhxbIyh0wdKYNwq2viY7VZ7Ex7N1Ev+/rFnISpi2PLsk1lyrlSHkE/Jk4SnfZuiW2hb9xcIsrSBuiHJpbopdVSsXyjlCK4WBQ3tSkgnya0v14ETrOY4Zw6iccAEe+qgp3uG2ljuVJpWTo=
+X-Forefront-Antispam-Report: 
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(376014)(1800799024)(56012099003)(22082099003)(18002099003)(13003099007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 
+	DYZa8ayyNfxn4rxENxvdXiaegioj5fuN1lsZW+XtjAxa7M/HBTY8g1f0pF6graWyC1InT7wvAnkTS3Oaufgai4dNKK3wLjUUJa0vOcSHBJXFQjGaWqozxWG8sdbfVoJ4dCiiKRcOikRxYVeAiVmraMnkANYLb4uuSPZZ0WX0NPw2ICyGgbgDpiGWvG1Rrk64HQFylCFZKRhQawOgQOv5V9JriHF6EOxibmQ9OBOoCL+kgaQhksiyGcfUqa9iQ32w84H1ZIzrErx55wA0Ux6FBJTvnyTSM0gYwyRUGLX68X4NEBu96oLxDGHle3DuuoNxxsdRjLA+KGcP2lUOLmaKuWtKK9NeRmpFVlD+A60ApgxJb3dtTNBsp4Plq3ovwgBUUFV6GQ5YifmWtuNfwdUrkQtqGW/7ClVXAesTzcuwLOplqsfAhGFZGue8EdZZe3DE
+X-OriginatorOrg: axis.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2026 13:51:33.6725
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 
+ 2e7fa5ea-9889-40c0-42ee-08dea46417db
+X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: 
+ TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
+X-MS-Exchange-CrossTenant-AuthSource: 
+	AMS0EPF0000019D.eurprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAVPR02MB9112
+List-Id: <bitbake-devel.lists.openembedded.org>
+X-Webhook-Received: from 45-33-107-173.ip.linodeusercontent.com
+ [45.33.107.173] by
+ aws-us-west-2-korg-lkml-1.web.codeaurora.org with HTTPS for
+ <bitbake-devel@lists.openembedded.org>; Mon, 27 Apr 2026 13:51:46 -0000
+X-Groupsio-URL: https://lists.openembedded.org/g/bitbake-devel/message/19396
+
+This avoids the 1 req/sec that the API has.
+
+Reference: https://github.com/rust-lang/crates.io/issues/13482
+Reference: https://blog.rust-lang.org/2024/03/11/crates-io-download-changes/
+Signed-off-by: Johan Anderholm <johanam@axis.com>
+---
+ lib/bb/fetch2/crate.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/lib/bb/fetch2/crate.py b/lib/bb/fetch2/crate.py
+index e611736f0..2d3078899 100644
+--- a/lib/bb/fetch2/crate.py
++++ b/lib/bb/fetch2/crate.py
+@@ -68,8 +68,11 @@ class Crate(Wget):
+         # if using upstream just fix it up nicely
+         if host == 'crates.io':
+             host = 'crates.io/api/v1/crates'
++            cdn_host = 'static.crates.io/crates'
++        else:
++            cdn_host = host
+ 
+-        ud.url = "https://%s/%s/%s/download" % (host, name, version)
++        ud.url = "https://%s/%s/%s/download" % (cdn_host, name, version)
+         ud.versionsurl = "https://%s/%s/versions" % (host, name)
+         ud.parm['downloadfilename'] = "%s-%s.crate" % (name, version)
+         if 'name' not in ud.parm:
