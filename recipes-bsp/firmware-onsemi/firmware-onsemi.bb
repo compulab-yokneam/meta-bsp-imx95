@@ -7,8 +7,6 @@ SRC_URI = "git://github.com/ONSemiconductor/ap1302_binaries.git;protocol=https;b
 PV = "1.0+git"
 SRCREV = "1742d72c7860a746d24ea1f4460767195f19da39"
 
-S = "${WORKDIR}/git"
-
 do_install () {
 	install -d ${D}${base_libdir}/firmware/onsemi
 
