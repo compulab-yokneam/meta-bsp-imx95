@@ -12,45 +12,16 @@ require u-boot-compulab/imx95.inc
 
 DEPENDS += "flex-native bison-native bc-native dtc-native gnutls-native"
 
-S = "${UNPACKDIR}/git"
-B = "${UNPACKDIR}/build"
-
 inherit fsl-u-boot-localversion
 
-LOCALVERSION = "-compulab"
+LOCALVERSION = "-compulab-${CL_RELEASE}"
 
 BOOT_TOOLS = "imx-boot-tools"
 
 do_compile:prepend () {
     export SOURCE_DATE_EPOCH=$(date +%s)
-    for _config in ${UBOOT_MACHINE}; do
-        echo  "CONFIG_LOCALVERSION=\"${UBOOT_VERSION_EXTENSION}\"" >> ${B}/${_config}/.config
-    done
-}
-
-do_deploy:append () {
-    # Deploy u-boot-nodtb.bin and ${MACHINE}.dtb, to be packaged in boot binary by imx-boot
-    if [ -n "${UBOOT_CONFIG}" ]
-    then
-        for config in ${UBOOT_MACHINE}; do
-            i=$(expr $i + 1);
-            for type in ${UBOOT_CONFIG}; do
-                j=$(expr $j + 1);
-                if [ $j -eq $i ]
-                then
-                    install -d ${DEPLOYDIR}/${BOOT_TOOLS}
-                    install -m 0644 ${B}/${config}/arch/arm/dts/${UBOOT_DTB_NAME}  ${DEPLOYDIR}/${BOOT_TOOLS}/${UBOOT_DTB_NAME}
-                    install -m 0644 ${B}/${config}/arch/arm/dts/${UBOOT_DTB_NAME}  ${DEPLOYDIR}/${BOOT_TOOLS}/${UBOOT_DTB_NAME}-${type}
-                    install -m 0644 ${B}/${config}/u-boot-nodtb.bin  ${DEPLOYDIR}/${BOOT_TOOLS}/u-boot-nodtb.bin-${MACHINE}-${type}
-                fi
-            done
-            unset  j
-        done
-        unset  i
-    fi
 }
 
 require u-boot-compulab-env.inc
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-UBOOT_NAME = "u-boot-${MACHINE}.bin-${UBOOT_CONFIG}"

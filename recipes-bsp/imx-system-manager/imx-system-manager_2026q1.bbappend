@@ -12,3 +12,6 @@ SRC_URI += " \
 "
 
 PATCHTOOL = "git"
+
+LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=f2a70813bc08547f509361c08b718861"
+SRCREV = "af1e37026c6ba19cdca98fd6e91494efd3e7b5ec"
