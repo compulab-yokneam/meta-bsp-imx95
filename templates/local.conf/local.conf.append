@@ -1,13 +1,3 @@
 LICENSE_FLAGS_ACCEPTED = "commercial"
 
-CORE_IMAGE_EXTRA_INSTALL += " cl-uboot cl-deploy cl-growfs-rootfs cl-camera cl-stest "
-CORE_IMAGE_EXTRA_INSTALL += " libubootenv-bin u-boot-compulab-env "
-CORE_IMAGE_EXTRA_INSTALL += " memtester htop iotop tmux iperf3 stress-ng iftop tcpdump "
-CORE_IMAGE_EXTRA_INSTALL += " libgpiod-tools bluez5 can-utils minicom eeprom-util usbutils i2c-tools "
-CORE_IMAGE_EXTRA_INSTALL += " iw dhcpcd ifupdown wpa-supplicant ntp "
-CORE_IMAGE_EXTRA_INSTALL += " networkmanager modemmanager "
-DISTRO_FEATURES:remove = "sysvinit"
-
 INHERIT += "rm_work"
-
-RM_WORK_EXCLUDE += "linux-compulab u-boot-compulab"
