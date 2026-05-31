@@ -1,3 +1,7 @@
+# Disclaimer                                                                                                                                                                                                                                                                  
+| !IMPORTANT! |This branch is not a release;<br>provided for development purpose only|
+|:---|:---|
+
 # Intro
 * Supported Compulab Products<br>
 [UCM-iMX95 - i.MX95 SMD System-on-Module](https://www.compulab.com/products/computer-on-modules/ucm-imx95-nxp-i-mx-95-som-system-on-module/)
@@ -36,7 +40,7 @@ The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
    |Revision|``conf/local.conf`` string|
    |---|---|
    |A0| IMX_SOC_REV:mx95-generic-bsp = "A0"|
-   |A1| IMX_SOC_REV:mx95-generic-bsp = "B0"|
+   |A1| IMX_SOC_REV:mx95-generic-bsp = "A0"|
    |B0| IMX_SOC_REV:mx95-generic-bsp = "B0"|
 
 * M7 firmware:<br>
