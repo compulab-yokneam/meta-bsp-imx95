@@ -1,10 +1,16 @@
-# Intro
-* Supported Compulab Products<br>
-[UCM-iMX95 - i.MX95 SMD System-on-Module](https://www.compulab.com/products/computer-on-modules/ucm-imx95-nxp-i-mx-95-som-system-on-module/)
+## Supported Compulab Products
+[UCM-iMX95 - i.MX95 System-on-Module](https://www.compulab.com/products/computer-on-modules/ucm-imx95-nxp-i-mx-95-som-system-on-module/)<br>
+[MCM-iMX95 - i.MX95 SMD System-on-Module](https://www.compulab.com/products/computer-on-modules/mcm-imx95-nxp-i-mx-95-som-smd-system-on-module/)
 
-* Preferred OS for build host is Ubuntu 22.04. It can be utilized with [Docker](https://github.com/compulab-yokneam/yocker)
+**Preferred OS for build host is Ubuntu 22.04. It can be utilized with Docker: https://github.com/compulab-yokneam/yocker**
 
 # Configuring the build
+* Set a machine that matches your SoM:
+  
+|Machine|Command Line|
+|---|---|
+|UCM-iMX95|```export MACHINE=ucm-imx95```
+|MCM-iMX95|```export MACHINE=mcm-imx95-sbc```
 ## Setup Yocto environment
   * Download NXP and CompuLab source:
     ```
@@ -36,7 +42,7 @@ The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
    |Revision|``conf/local.conf`` string|
    |---|---|
    |A0| IMX_SOC_REV:mx95-generic-bsp = "A0"|
-   |A1| IMX_SOC_REV:mx95-generic-bsp = "B0"|
+   |A1| IMX_SOC_REV:mx95-generic-bsp = "A0"|
    |B0| IMX_SOC_REV:mx95-generic-bsp = "B0"|
 
 * M7 firmware:<br>
@@ -87,6 +93,10 @@ The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
 * Host Machine command:
   ```
   sudo zstd -dc $image_location | sudo dd bs=1M status=progress of=/dev/sdX
+  ```
+  or _far faster than DD_
+  ```
+  sudo bmaptool copy $image_location /dev/sdX
   ```
 * SoM procedur:
   * Power off
