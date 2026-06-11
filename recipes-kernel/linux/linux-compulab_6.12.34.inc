@@ -1,4 +1,5 @@
 SRCBRANCH = "linux-compulab_v6.12.34"
+SRCBRANCH:mcm-imx95-sbc = "linux-compulab_v6.12.34-mcm95"
 SRC_URI = "git://github.com/compulab-yokneam/linux-compulab;protocol=https;branch=${SRCBRANCH}"
 SRCREV = "${AUTOREV}"
 LINUX_VERSION = "6.12.34"
