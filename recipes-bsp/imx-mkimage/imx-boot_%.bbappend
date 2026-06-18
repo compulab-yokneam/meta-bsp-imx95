@@ -9,7 +9,12 @@ SRC_URI += " \
 
 do_deploy:append:compulab-mx95() {
 
-install -m 0644 ${UNPACKDIR}/Makefile    ${DEPLOYDIR}/${BOOT_TOOLS}
+    if [ -f "${DEPLOYDIR}/imx-boot" ]; then
+        realname=$(basename $(readlink -e ${DEPLOYDIR}/imx-boot))
+        ln -s ${realname} ${DEPLOYDIR}/${realname}-${IMX_SOC_REV}-${DRAM_CONF}
+    fi
+
+    install -m 0644 ${UNPACKDIR}/Makefile    ${DEPLOYDIR}/${BOOT_TOOLS}
     install -m 0644 ${UNPACKDIR}/howto.md    ${DEPLOYDIR}/${BOOT_TOOLS}
     install -m 0644 ${UNPACKDIR}/source.me   ${DEPLOYDIR}/${BOOT_TOOLS}
     install -m 0755 ${UNPACKDIR}/m7-set.sh   ${DEPLOYDIR}/${BOOT_TOOLS}
