@@ -2,7 +2,7 @@
  <manifest>
  <remote fetch="https://github.com/compulab-yokneam" name="compulab"/>
 
-    <project name="meta-bsp-imx95" remote="compulab" revision="whinlatter-6.18.2-1.0.0" path="sources/meta-bsp-imx95" >
+    <project name="meta-bsp-imx95" remote="compulab" revision="wrynose-6.18.20-2.0.0" path="sources/meta-bsp-imx95" >
         <linkfile src="tools/compulab-setup-env" dest="compulab-setup-env"/>
     </project>
 
