@@ -21,20 +21,21 @@
 
 ## Pre-build customization (optional)
 * Set a correct dram configuration value:<br>
-The current relase supports: **D4**, and **D8**.
+The current relase supports: **D4**, **D8** and **D16**.
 
    |NOTE|Default configuration is ``D8``|
    | --- | --- |
 
    |DRAM Configuration|``conf/local.conf`` string|
-   |---|---|
+   |:---|:---|
    |D4| DRAM_CONF = "D4"|
    |D8| DRAM_CONF = "D8"|
-   
+   |D16| DRAM_CONF = "D16"|
+
 * Set a correct imx soc revision:<br>
 The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
 
-   |NOTE|[Default revision is B0](https://github.com/nxp-imx/meta-imx/blob/walnascar-6.12.34-2.1.0/meta-imx-bsp/conf/machine/include/imx-base-extend.inc#L23)|
+   |NOTE|[Default revision is B0](https://github.com/nxp-imx/meta-imx/blob/whinlatter-6.18.2-1.0.0/meta-imx-bsp/conf/machine/include/imx-base-extend.inc#L23)|
    | --- | --- |
 
    |Revision|``conf/local.conf`` string|
@@ -46,9 +47,9 @@ The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
 * M7 firmware:<br>
   i.MX95 allows booting the m7 core at the system start.<br>
   In order to achive that an M7 firmware has to be a part of the imx-boot image.<br>
-  The [``M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.34-2.1.0/conf/machine/compulab-imx95.inc#L34) variable specifies which firmware to use.
+  The [``M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/whinlatter-6.18.2-1.0.0/conf/machine/compulab-imx95.inc#L34) variable specifies which firmware to use.
 
-  In order to use another firmware add this line to the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.34-2.1.0/templates/local.conf/local.conf.m7.append#L3):
+  In order to use another firmware add this line to the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/whinlatter-6.18.2-1.0.0/templates/local.conf/local.conf.m7.append#L3):
   ```
   M4_DEFAULT_IMAGE_MX95:mx95-generic-bsp = "imx95-19x19-evk_m7_TCM_rpmsg_lite_str_echo_rtos.bin"
   ```
@@ -60,7 +61,7 @@ The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
   |NOTE|Default SM configuration is ``mx95cpl``|
   |---|---|
 
-  The systen controller configuration can be changed by setting a value to ``IMXBOOT_VARIANT`` variable in the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/walnascar-6.12.34-2.1.0/templates/local.conf/local.conf.soc-revision.append#L8):<br>
+  The systen controller configuration can be changed by setting a value to ``IMXBOOT_VARIANT`` variable in the [``conf/local.conf``](https://github.com/compulab-yokneam/meta-bsp-imx95/blob/whinlatter-6.18.2-1.0.0/templates/local.conf/local.conf.soc-revision.append#L8):<br>
 
   |Variable|Value|Description|
   |---|---|---|
