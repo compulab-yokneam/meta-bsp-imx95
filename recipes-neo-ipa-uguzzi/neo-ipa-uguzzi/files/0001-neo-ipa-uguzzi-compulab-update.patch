@@ -1,7 +1,7 @@
-From 44b275d6340996ac722f180dc37a3820403aee6a Mon Sep 17 00:00:00 2001
+From b345f14a4ff70bf8dd80d36e3ddbdc594a62ba12 Mon Sep 17 00:00:00 2001
 From: Valentin Raevsky <valentin@compulab.co.il>
-Date: Thu, 21 May 2026 20:49:20 +0000
-Subject: [PATCH] compulab update
+Date: Fri, 3 Jul 2026 07:45:44 +0000
+Subject: [PATCH] neo-ipa-uguzzi: compulab update
 
 Upstream-Status: Pending
 
@@ -120,7 +120,7 @@ index 0000000..3e76558
 +
 +*/
 diff --git a/cam_helper/meson.build b/cam_helper/meson.build
-index 79bb815..0740769 100644
+index 7ad8b29..1a6055c 100644
 --- a/cam_helper/meson.build
 +++ b/cam_helper/meson.build
 @@ -4,6 +4,7 @@ nxp_ipa_cam_helper_sources = files([
@@ -132,12 +132,12 @@ index 79bb815..0740769 100644
      'camera_helper_imx708.cpp',
      'camera_helper_mx95mbcam.cpp',
 diff --git a/data/config_ipa_uguzzi.yaml b/data/config_ipa_uguzzi.yaml
-index e2603e4..365f4aa 100644
+index 929b2d3..c5094ec 100644
 --- a/data/config_ipa_uguzzi.yaml
 +++ b/data/config_ipa_uguzzi.yaml
-@@ -73,4 +73,25 @@ sensors:
-         dtp-file: database_ox05b1s_2592-1944_10bpp.bin
-         tuning-id: 2010
+@@ -99,4 +99,25 @@ sensors:
+         dtp-file: database_ox05b1s_dual_2592-1944_10bpp.bin
+         tuning-id: [ 2011, 2012 ]
          tuning-mode: 0
 +  - model: imx219
 +    profiles:
@@ -162,13 +162,13 @@ index e2603e4..365f4aa 100644
 +    socket-port: 50040
  ...
 diff --git a/data/meson.build b/data/meson.build
-index 6fc860b..978f2ba 100644
+index d8b7b47..15894bb 100644
 --- a/data/meson.build
 +++ b/data/meson.build
 @@ -5,6 +5,9 @@ conf_files = files([
      'database_os08a20_SDR_3840-2160_12bpp.bin',
      'database_os08a20_HDR_3840-2160_12bpp.bin',
-     'database_ox05b1s_2592-1944_10bpp.bin',
+     'database_ox05b1s_dual_2592-1944_10bpp.bin',
 +    'database_imx219_3280_2464.bin',
 +    'database_imx219_1920_1080.bin',
 +    'database_imx477_3840_2160.bin',
