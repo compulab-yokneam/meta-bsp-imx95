@@ -66,3 +66,5 @@ KERNEL_DEVICETREE:append = " \
     compulab/imx95-csi1-imx219.dtbo \
     compulab/imx95-csi1-imx477.dtbo \
 "
+
+DRAM_CONF ?= "D8"
