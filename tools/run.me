@@ -2,7 +2,7 @@ export COMPULAB_MACHINE=ucm-imx95
 export SOC=imx95
 export BSP=$(pwd)/compulab-${SOC}-bsp
 mkdir ${BSP} && cd ${BSP}
-repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-whinlatter -m imx-6.18.2-1.0.0.xml
+repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-wrynose -m imx-6.18.20-2.0.0.xml
 wget --directory-prefix .repo/local_manifests https://raw.githubusercontent.com/compulab-yokneam/meta-bsp-imx95/wrynose-6.18.20-2.0.0/scripts/meta-bsp-imx95.xml
 repo sync
 
