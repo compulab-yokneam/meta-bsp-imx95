@@ -1,0 +1,5 @@
+# Uncomment BB_... lines if the build runs into
+# the shallow download issue at do_fetch
+# the issue gets appeared at do_unpack
+# BB_GIT_SHALLOW:compulab-mx95 = "0"
+# BB_GENERATE_SHALLOW_TARBALLS:compulab-mx95 = "0"
