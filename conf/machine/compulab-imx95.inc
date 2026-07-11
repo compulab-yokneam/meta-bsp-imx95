@@ -68,3 +68,6 @@ KERNEL_DEVICETREE:append = " \
 "
 
 DRAM_CONF ?= "D8"
+
+# Use these inc files untill the 2026.04 is getting ported
+require include/u-boot_2025.04.inc
