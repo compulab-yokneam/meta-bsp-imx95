@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}_${PV}:"
 
 SRC_URI += " \
 	file://0001-compulab-Add-boards-mcimx95cpl.patch \
@@ -10,8 +10,6 @@ SRC_URI += " \
 	file://0007-comppulab-Set-BRD_SM_NAME-to-i.MX95-CompuLab-SOM.patch \
 	file://0008-configs-mx95cplrpmsg.cfg-Apply-all-NXP-restrictions.patch \
 "
-
-PATCHTOOL = "git"
 
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=f2a70813bc08547f509361c08b718861"
 SRCREV = "af1e37026c6ba19cdca98fd6e91494efd3e7b5ec"

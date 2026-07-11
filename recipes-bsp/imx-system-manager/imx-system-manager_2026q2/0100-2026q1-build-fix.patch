@@ -1,0 +1,213 @@
+From 40c5d9f10b4e9d8081f74be7299b859d8cbcd617 Mon Sep 17 00:00:00 2001
+From: Valentin Raevsky <valentin@compulab.co.il>
+Date: Sat, 11 Jul 2026 09:35:23 +0000
+Subject: [PATCH] 2026q1 build fix
+
+Signed-off-by: Valentin Raevsky <valentin@compulab.co.il>
+---
+ boards/mcimx95cpl/sm/brd_sm.c          | 40 ++++++--------------------
+ boards/mcimx95cpl/sm/brd_sm_handlers.c | 24 +++++-----------
+ 2 files changed, 15 insertions(+), 49 deletions(-)
+
+diff --git a/boards/mcimx95cpl/sm/brd_sm.c b/boards/mcimx95cpl/sm/brd_sm.c
+index 077fa06..f565593 100755
+--- a/boards/mcimx95cpl/sm/brd_sm.c
++++ b/boards/mcimx95cpl/sm/brd_sm.c
+@@ -1,7 +1,7 @@
+ /*
+ ** ###################################################################
+ **
+-** Copyright 2023-2026 NXP
++** Copyright 2023-2025 NXP
+ **
+ ** Redistribution and use in source and binary forms, with or without modification,
+ ** are permitted provided that the following conditions are met:
+@@ -113,10 +113,6 @@
+ #define BOARD_BOOT_LEVEL  DEV_SM_PERF_LVL_LOW  /* Boot perf low */
+ #endif
+ 
+-/* Timeing macros */
+-#define TIME_START(X)   (X) = DEV_SM_Usec64Get()
+-#define TIME_ADD(X, Y)  (Y) += (DEV_SM_Usec64Get() - (X))
+-
+ /* Local types */
+ 
+ /* Local variables */
+@@ -135,13 +131,9 @@ int32_t BRD_SM_Init(int argc, const char * const argv[], uint32_t *mSel)
+     uint64_t addr;
+     uint32_t ms;
+     uint32_t flags;
+-    uint64_t usec;
+ 
+     /* Init board hardware */
+-    TIME_START(usec);
+     BOARD_InitHardware();
+-    /* coverity[cert_int30_c_violation] - just for test */
+-    TIME_ADD(usec, g_bootTime[SM_BT_BRD]);
+ 
+     /* Get the boot mode select */
+     if (DEV_SM_RomBootCpuGet(DEV_SM_CPU_M33P, &addr, &ms, &flags)
+@@ -151,21 +143,14 @@ int32_t BRD_SM_Init(int argc, const char * const argv[], uint32_t *mSel)
+     }
+ 
+     /* Initialize devices connected to serial buses (PMIC, IOExp, etc) */
+-    TIME_START(usec);
+     status = BRD_SM_SerialDevicesInit();
+-    /* coverity[cert_int30_c_violation] - just for test */
+-    TIME_ADD(usec, g_bootTime[SM_BT_BRD]);
+ 
+     if (status == SM_ERR_SUCCESS)
+     {
+         /* Init the device */
+-        TIME_START(usec);
+         status = DEV_SM_Init(BOARD_BOOT_LEVEL, BOARD_PERF_LEVEL);
+-        /* coverity[cert_int30_c_violation] - just for test */
+-        TIME_ADD(usec, g_bootTime[SM_BT_DEV]);
+     }
+ 
+-    TIME_START(usec);
+     if (status == SM_ERR_SUCCESS)
+     {
+         /* Complete board init after device init */
+@@ -201,8 +186,6 @@ int32_t BRD_SM_Init(int argc, const char * const argv[], uint32_t *mSel)
+     {
+         SRC_XSPR_HSIOMIX_TOP->SLICE_SW_CTRL &= (~ipIsoMask);
+     }
+-    /* coverity[cert_int30_c_violation] - just for test */
+-    TIME_ADD(usec, g_bootTime[SM_BT_BRD]);
+ 
+     /* Return status */
+     return status;
+@@ -211,8 +194,7 @@ int32_t BRD_SM_Init(int argc, const char * const argv[], uint32_t *mSel)
+ /*--------------------------------------------------------------------------*/
+ /* Exit function                                                            */
+ /*--------------------------------------------------------------------------*/
+-/* gcov_excl_start - calling will lose gcov data */
+-void BRD_SM_Exit(int32_t status, uint32_t pc)
++_Noreturn void BRD_SM_Exit(int32_t status, uint32_t pc)
+ {
+ #if defined(MONITOR) || defined(RUN_TEST)
+     printf("exit %d, 0x%08X\n", status, pc);
+@@ -226,9 +208,12 @@ void BRD_SM_Exit(int32_t status, uint32_t pc)
+ #endif
+ 
+     /* Hang */
+-    DEV_SM_SystemHalt();
++    /* coverity[infinite_loop] */
++    while (true)
++    {
++        ; /* Intentional empty while */
++    }
+ }
+-/* gcov_excl_stop */
+ 
+ /*--------------------------------------------------------------------------*/
+ /* Board timer tick                                                         */
+@@ -470,8 +455,6 @@ void BRD_SM_ShutdownRecordSave(dev_sm_rst_rec_t shutdownRec)
+ /*--------------------------------------------------------------------------*/
+ /* Reset board                                                              */
+ /*--------------------------------------------------------------------------*/
+-/* gcov_excl_start - calling will lose gcov data */
+-/* coverity[misra_c_2012_rule_17_11_violation] */
+ int32_t BRD_SM_SystemReset(void)
+ {
+     int32_t status = SM_ERR_SUCCESS;
+@@ -494,7 +477,6 @@ int32_t BRD_SM_SystemReset(void)
+     /* Return status */
+     return status;
+ }
+-/* gcov_excl_stop */
+ 
+ /*--------------------------------------------------------------------------*/
+ /* Get PMIC info                                                            */
+@@ -673,16 +655,10 @@ int32_t BRD_SM_SupplyLevelGet(uint32_t domain, int32_t *microVolt)
+ /*--------------------------------------------------------------------------*/
+ static int32_t BRD_SM_InitComplete(uint32_t mSel)
+ {
+-    int32_t status;
+-
+     /* Safe to call DEV_SM functions to init hardware. For example, to
+        enabled a power domain, configure a clock SSC, clock rate, or pin.
+        Not safe to call LMM functions! */
+ 
+-    /* Init clock override */
+-    status = BRD_SM_ClockInit();
+-
+-    /* Return status */
+-    return status;
++    return SM_ERR_SUCCESS;
+ }
+ 
+diff --git a/boards/mcimx95cpl/sm/brd_sm_handlers.c b/boards/mcimx95cpl/sm/brd_sm_handlers.c
+index d2fa3b4..4c95452 100755
+--- a/boards/mcimx95cpl/sm/brd_sm_handlers.c
++++ b/boards/mcimx95cpl/sm/brd_sm_handlers.c
+@@ -149,8 +149,7 @@ int32_t BRD_SM_SerialDevicesInit(void)
+         /* Change the LDO3 sequence */
+         if (status == SM_ERR_SUCCESS)
+         {
+-            if (!PF09_PmicWrite(&g_pf09Dev, PF09_REG_LDO3_PWRUP,
+-                0x1EU, 0xFFU))
++            if (!PF09_PmicWrite(&g_pf09Dev, 0x4AU, 0x1EU, 0xFFU))
+             {
+                 status = SM_ERR_HARDWARE_ERROR;
+             }
+@@ -159,8 +158,7 @@ int32_t BRD_SM_SerialDevicesInit(void)
+         /* Set the LDO3 OV bypass */
+         if (status == SM_ERR_SUCCESS)
+         {
+-            if (!PF09_PmicWrite(&g_pf09Dev, PF09_REG_LDO3_CFG2,
+-                0xFCU, 0xFFU))
++            if (!PF09_PmicWrite(&g_pf09Dev, 0x7FU, 0xFCU, 0xFFU))
+             {
+                 status = SM_ERR_HARDWARE_ERROR;
+             }
+@@ -169,24 +167,18 @@ int32_t BRD_SM_SerialDevicesInit(void)
+         /* Enable the LDO3 in RUN mode */
+         if (status == SM_ERR_SUCCESS)
+         {
+-            if (!PF09_PmicWrite(&g_pf09Dev, PF09_REG_LDO3_RUN,
+-                0x20U, 0xFFU))
++            if (!PF09_PmicWrite(&g_pf09Dev, 0x7DU, 0x20U, 0xFFU))
+             {
+                 status = SM_ERR_HARDWARE_ERROR;
+             }
+         }
+ 
+-        /* Set the OV debounce to 50us due to errata ER011/12
+-           for rev B0 */
+-        if (g_pf09Dev.id[PF09_REG_REV_ID] == PF09_REV_B0)
++        /* Set the OV debounce to 50us due to errata ER011/12 */
++        if (status == SM_ERR_SUCCESS)
+         {
+-            if (status == SM_ERR_SUCCESS)
++            if (!PF09_PmicWrite(&g_pf09Dev, 0x37U, 0x94U, 0xFFU))
+             {
+-                if (!PF09_PmicWrite(&g_pf09Dev, PF09_REG_VMON_CFG1,
+-                    0x94U, 0xFFU))
+-                {
+-                    status = SM_ERR_HARDWARE_ERROR;
+-                }
++                status = SM_ERR_HARDWARE_ERROR;
+             }
+         }
+ 
+@@ -302,7 +294,6 @@ void GPIO1_0_IRQHandler(void)
+     if ((status & BIT8(PCAL6408A_INPUT_PF09_INT)) != 0U)
+     {
+         /* Asserts low */
+-        /* gcov_excl_ntbr_nextline - rising edge not seen */
+         if ((val & BIT8(PCAL6408A_INPUT_PF09_INT)) == 0U)
+         {
+             BRD_SM_Pf09Handler();
+@@ -314,7 +305,6 @@ void GPIO1_0_IRQHandler(void)
+         != 0U))
+     {
+         /* Asserts low */
+-        /* gcov_excl_ntbr_nextline - rising edge not seen */
+         if ((val & BIT8(PCAL6408A_INPUT_PCA2131_INT)) == 0U)
+         {
+             BRD_SM_BbmHandler();
+-- 
+2.43.0
+
