@@ -23,6 +23,7 @@ KCONFIG_MODE = "--alldefconfig"
 # machine, with different entry points
 KERNEL_EXTRA_ARGS += "LOADADDR=${UBOOT_ENTRYPOINT}"
 KBUILD_DEFCONFIG:compulab-mx95 ?= "compulab-mx95_defconfig"
+KBUILD_DEFCONFIG:compulab-mx952 ?= "compulab-mx95_defconfig"
 EXTRA_OEMAKE += "DTC_FLAGS=-@ "
 
 DEPENDS += "lzop-native bc-native coreutils-native"

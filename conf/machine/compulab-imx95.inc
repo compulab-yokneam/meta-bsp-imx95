@@ -42,18 +42,7 @@ IMX_BOOT_SEEK = "32"
 
 SERIAL_CONSOLES = "115200;ttyLP0"
 
-PREFERRED_PROVIDER_virtual/kernel:compulab-mx95 = "linux-compulab"
-PREFERRED_PROVIDER_virtual/bootloader:compulab-mx95 = "u-boot-compulab"
-
-IMAGE_INSTALL:append = " \
-	kernel-image \
-	kernel-modules \
-	kernel-devicetree \
-"
-
-PREFERRED_RROVIDER_u-boot-fw-utils = "libubootenv-bin"
-
-DISTRO_FEATURES:remove = "sysvinit"
+require include/compulab-default.inc
 
 IMX_DEFAULT_BSP = "nxp"
 
