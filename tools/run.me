@@ -1,5 +1,33 @@
-export COMPULAB_MACHINE=ucm-imx95
-export SOC=imx95
+#!/bin/bash -e
+
+declare -A MACH;
+
+MACH+=( [ucm-imx95]=imx95 )
+MACH+=( [ucm-imx952]=imx952 )
+
+function_select_machine() {
+select_string=${!MACH[@]}" <<"
+PS3="Select the MACHINE # "
+select i in $select_string; do
+	case $i in
+	"<<")
+		exit
+		;;
+	'')
+		echo Select a correct produt from the list >&2
+		continue
+		;;
+	*)
+		export COMPULAB_MACHINE=${i}
+		break
+		;;
+	esac
+done
+}
+
+export COMPULAB_MACHINE=${COMPULAB_MACHINE:-"empty-choise"}
+[[ ${!MACH[@]} =~ ${COMPULAB_MACHINE} ]] || function_select_machine
+export SOC=${MACH[${COMPULAB_MACHINE}]}
 export BSP=$(pwd)/compulab-${SOC}-bsp
 mkdir ${BSP} && cd ${BSP}
 repo init -u https://github.com/nxp-imx/imx-manifest.git -b imx-linux-wrynose -m imx-6.18.20-2.0.0.xml
