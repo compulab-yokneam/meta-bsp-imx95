@@ -3,8 +3,8 @@ MACHINEOVERRIDES =. "mx952:compulab-mx952:"
 require conf/machine/include/imx-base.inc
 require conf/machine/include/arm/armv8-2a/tune-cortexa55.inc
 
-MACHINE_FEATURES += "pci wifi bluetooth"
-MACHINE_FEATURES:append:use-nxp-bsp = " crrm jailhouse nxpaw693-pcie optee xen"
+MACHINE_FEATURES += "pci wifi bluetooth optee"
+MACHINE_FEATURES:append:use-nxp-bsp = " crrm jailhouse nxpwifi-all-sdio nxpaw693-pcie xen"
 
 IMX_DEFAULT_BOOTLOADER:use-nxp-bsp = "u-boot-compulab"
 IMX_DEFAULT_BOOTLOADER:use-mainline-bsp = "u-boot-compulab"
@@ -65,6 +65,17 @@ IMX_BOOT_SEEK = "32"
 SERIAL_CONSOLES = "115200;ttyLP0"
 
 IMX_DEFAULT_BSP = "nxp"
+
+KERNEL_DEVICETREE:append = " \
+    compulab/imx952-csi1-ap1302.dtbo \
+    compulab/imx952-csi1-imx219.dtbo \
+    compulab/imx952-csi1-imx477.dtbo \
+    compulab/imx952-csi2-ap1302.dtbo \
+    compulab/imx952-lvds.dtbo \
+    compulab/imx952-rpmsg.dtbo \
+    compulab/imx952-spidev.dtbo \
+    compulab/imx952-wm8962.dtbo \
+"
 
 IMAGE_BOOT_FILES:append:imx-nxp-bsp = " \
     mcore-demos/imx952evk_m7_TCM_hello_world.bin \
