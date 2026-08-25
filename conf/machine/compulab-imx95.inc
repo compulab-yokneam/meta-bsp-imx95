@@ -1,4 +1,8 @@
-MACHINEOVERRIDES =. "mx95:compulab-mx95:"
+# LPDDR5 remains the default. Set DDR_TYPE = "lpddr4x" in local.conf for
+# UCM-iMX95 variants assembled with LPDDR4X.
+DDR_TYPE ?= "lpddr5"
+
+MACHINEOVERRIDES =. "mx95:compulab-mx95:${DDR_TYPE}:"
 
 require conf/machine/include/imx-base.inc
 require conf/machine/include/arm/armv8-2a/tune-cortexa55.inc
@@ -21,14 +25,21 @@ ATF_PLATFORM = "imx95"
 OEI_CONFIGS = "ddr tcm"
 OEI_CORE   = "m33"
 OEI_SOC    = "mx95"
-OEI_BOARD  = "mx95lp5"
-DDR_TYPE   = "lpddr5"
+OEI_BOARD:lpddr5  = "mx95lp5"
+OEI_BOARD:lpddr4x = "mx95lp4x"
 
-DDR_FIRMWARE_NAME = " \
+DDR_FIRMWARE_NAME:lpddr5 = " \
     lpddr5_dmem_v202409.bin \
     lpddr5_dmem_qb_v202409.bin \
     lpddr5_imem_v202409.bin \
     lpddr5_imem_qb_v202409.bin \
+"
+
+DDR_FIRMWARE_NAME:lpddr4x = " \
+    lpddr4x_dmem_v202409.bin \
+    lpddr4x_dmem_qb_v202409.bin \
+    lpddr4x_imem_v202409.bin \
+    lpddr4x_imem_qb_v202409.bin \
 "
 
 M4_DEFAULT_IMAGE_MX95 = "imx95-19x19-evk_m7_TCM_power_mode_switch.bin"
