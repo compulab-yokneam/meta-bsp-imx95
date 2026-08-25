@@ -6,12 +6,14 @@ SRC_URI:append = " \
     file://m7-set.sh \
 "
 
-do_deploy:append:compulab-mx952() {
-
+do_deploy:append() {
     if [ -f "${DEPLOYDIR}/imx-boot" ]; then
         realname=$(basename $(readlink -e ${DEPLOYDIR}/imx-boot))
-        ln -s ${realname} ${DEPLOYDIR}/${realname}-${IMX_SOC_REV}-${DRAM_CONF}
+        ln -s ${realname} ${DEPLOYDIR}/${realname}-${IMX_SOC_REV}-${DRAM_CONF}-${DDR_TYPE}
     fi
+}
+
+do_deploy:append:compulab-mx952() {
 
     install -m 0644 ${UNPACKDIR}/howto.md    ${DEPLOYDIR}/${BOOT_TOOLS}
     sed 's/\.\.\/mkimage_imx8/\.\/mkimage_imx8/g;s/rm -f $(MKIMG)/rm -f/g' ${S}/iMX952/soc.mak > ${DEPLOYDIR}/${BOOT_TOOLS}/Makefile
@@ -24,11 +26,6 @@ do_deploy:append:compulab-mx952() {
 }
 
 do_deploy:append:compulab-mx95() {
-
-    if [ -f "${DEPLOYDIR}/imx-boot" ]; then
-        realname=$(basename $(readlink -e ${DEPLOYDIR}/imx-boot))
-        ln -s ${realname} ${DEPLOYDIR}/${realname}-${IMX_SOC_REV}-${DRAM_CONF}
-    fi
 
     sed 's/\.\.\/mkimage_imx8/\.\/mkimage_imx8/g;s/rm -f $(MKIMG)/rm -f/g' ${S}/iMX95/soc.mak > ${DEPLOYDIR}/${BOOT_TOOLS}/Makefile
     install -m 0644 ${UNPACKDIR}/howto.md    ${DEPLOYDIR}/${BOOT_TOOLS}
