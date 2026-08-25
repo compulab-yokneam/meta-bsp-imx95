@@ -1,4 +1,7 @@
+DRAM_CONF ?= "D8"
+
 MACHINEOVERRIDES =. "mx952:compulab-mx952:"
+MACHINEOVERRIDES =. "${@d.getVar('DRAM_CONF').lower()}:"
 
 require conf/machine/include/imx-base.inc
 require conf/machine/include/arm/armv8-2a/tune-cortexa55.inc
@@ -86,7 +89,5 @@ IMAGE_BOOT_FILES:append:imx-nxp-bsp = " \
     mcore-demos/imx952evk_m7_TCM_sai_low_power_audio.bin \
     ${@bb.utils.contains('COMBINED_FEATURES', 'xen', 'xen', '', d)} \
 "
-
-DRAM_CONF ?= "D8"
 
 require include/compulab-default.inc
