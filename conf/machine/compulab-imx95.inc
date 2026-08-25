@@ -1,8 +1,10 @@
 # LPDDR5 remains the default. Set DDR_TYPE = "lpddr4x" in local.conf for
 # UCM-iMX95 variants assembled with LPDDR4X.
 DDR_TYPE ?= "lpddr5"
+DRAM_CONF ?= "D8"
 
 MACHINEOVERRIDES =. "mx95:compulab-mx95:${DDR_TYPE}:"
+MACHINEOVERRIDES =. "${@d.getVar('DRAM_CONF').lower()}:"
 
 require conf/machine/include/imx-base.inc
 require conf/machine/include/arm/armv8-2a/tune-cortexa55.inc
@@ -66,8 +68,6 @@ KERNEL_DEVICETREE:append = " \
     compulab/imx95-csi1-imx219.dtbo \
     compulab/imx95-csi1-imx477.dtbo \
 "
-
-DRAM_CONF ?= "D8"
 
 # Use these inc files untill the 2026.04 is getting ported
 require include/u-boot_2025.04.inc
