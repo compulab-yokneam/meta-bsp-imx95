@@ -1,6 +1,6 @@
 #!/bin/bash
 
-select_string="$(ls  ../mcore-demos/*19x19*.bin)"
+select_string="$(ls  ../mcore-demos/*m7_TCM*.bin)"
 select_string+=" << "
 PS3="m7 image: your choice > "
 
