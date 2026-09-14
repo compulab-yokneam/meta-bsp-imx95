@@ -13,7 +13,7 @@ sudo ln -sf dirname $(dirname ${SM_CROSS_COMPILE}) ${TOOLS}/
 
 * imx-oei
 ```
-make -j 32 board=mx952cpl DDR_CONFIG=lpddr5_timing_8g DEBUG=1 r=@@IMX_SOC_REV@@ oei=ddr
+make -j 32 board=mx952cpl DDR_CONFIG=lpddr5_timing_8g DEBUG=1 r=@@IMX_SOC_REV@@ oei=tcm
 ```
 
 * imx-system-manager
@@ -28,12 +28,12 @@ Is not covered in this manual.
 
 * imx-boot all
 ```
-make SOC=iMX952 REV=@@IMX_SOC_REV@@ OEI=YES LPDDR_TYPE=lpddr5 dtbs=ucm-imx952.dtb flash_all
+make SOC=iMX952 REV=@@IMX_SOC_REV@@ OEI=YES LPDDR_TYPE=lpddr5 flash_all
 ```
 
 * imx-boot arm Cortex-M7 under control of Cortex-A55 U-Boot/Linux
 ```
-make SOC=iMX952 REV=@@IMX_SOC_REV@@ OEI=YES LPDDR_TYPE=lpddr5 dtbs=ucm-imx952.dtb flash_a55
+make SOC=iMX952 REV=@@IMX_SOC_REV@@ OEI=YES LPDDR_TYPE=lpddr5 flash_a55
 ```
 
 * Boot Env for Cortex-M7 under Linux control
