@@ -13,6 +13,7 @@ sudo ln -sf dirname $(dirname ${SM_CROSS_COMPILE}) ${TOOLS}/
 
 * imx-oei
 ```
+make -j 32 board=mx952cpl DDR_CONFIG=lpddr5_timing_8g DEBUG=1 r=@@IMX_SOC_REV@@ oei=ddr
 make -j 32 board=mx952cpl DDR_CONFIG=lpddr5_timing_8g DEBUG=1 r=@@IMX_SOC_REV@@ oei=tcm
 ```
 
