@@ -1,4 +1,5 @@
-# Disclaimer                                                                                                                                                                                                                                                                  
+# Disclaimer
+
 | !IMPORTANT! |This branch is not a release;<br>provided for development purpose only|
 |:---|:---|
 
@@ -20,17 +21,29 @@
     ```
 
 ## Pre-build customization (optional)
-* Set a correct dram configuration value:<br>
-The current relase supports: **D4**, **D8** and **D16**.
+* Set a correct dram configuration values:<br>
+  * DRAM size:<br>
+    The supported DRAM: **D4**, **D8** and **D16**.
 
-   |NOTE|Default configuration is ``D8``|
-   | --- | --- |
+    |NOTE|Default configuration is ``D8``|
+    | --- | --- |
 
-   |DRAM Configuration|``conf/local.conf`` string|
-   |:---|:---|
-   |D4| DRAM_CONF = "D4"|
-   |D8| DRAM_CONF = "D8"|
-   |D16| DRAM_CONF = "D16"|
+    |DRAM Configuration|``conf/local.conf`` string|
+    |:---|:---|
+    |D4| DRAM_CONF = "D4"|
+    |D8| DRAM_CONF = "D8"|
+    |D16| DRAM_CONF = "D16"|
+
+  * DRAM type:<br>
+    The supported DRAM types: **lpddr5** and **lpddr4x**.
+
+    |NOTE|Default type is ``lpddr5``|
+    | --- | --- |
+
+    |DRAM Type|``conf/local.conf`` string|
+    |:---|:---|
+    |lpddr4x| DRAM_TYPE = "lpddr4x"|
+    |lpddr5| DRAM_TYPE = "lpddr5"|
 
 * Set a correct imx soc revision:<br>
 The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
