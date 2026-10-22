@@ -1,0 +1,9 @@
+#!/bin/sh
+# Source the Yocto environment and run from the build directory.
+# Usage: ../sources/meta-bsp-imx95/tools/build-with-progress imx-image-full
+if [ "$#" -eq 0 ]; then
+    set -- imx-image-full
+fi
+python3 "$(dirname "$0")/build-progress.py" --run bitbake "$@"
+result=$?
+exit "$result"
