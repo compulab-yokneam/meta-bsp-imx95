@@ -7,8 +7,14 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     libgpiod-tools bluez5 can-utils minicom eeprom-util usbutils i2c-tools \
 "
 CORE_IMAGE_EXTRA_INSTALL += " iw dhcpcd ifupdown wpa-supplicant ntp "
+CORE_IMAGE_EXTRA_INSTALL += " networkmanager modemmanager "
 
 #DISTRO_FEATURES:remove = "sysvinit"
 
 INHERIT += "rm_work"
 #RM_WORK_EXCLUDE += "linux-compulab u-boot-compulab"
+
+# NetworkManager is selected; exclude mutually exclusive ConnMan test helpers.
+RDEPENDS:packagegroup-core-tools-testapps:remove = " \
+    connman-client connman-tools connman-tests \
+"
