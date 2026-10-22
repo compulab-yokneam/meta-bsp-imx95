@@ -1,1 +1,4 @@
 BBLAYERS += "${BSPDIR}/sources/meta-bsp-imx95"
+
+# CompuLab utility recipes, including eeprom-util
+BBLAYERS += "${BSPDIR}/sources/meta-compulab-bsp/meta-utils"
