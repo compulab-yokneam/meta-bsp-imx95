@@ -1,0 +1,18 @@
+Subject: [PATCH] pam_systemd: allow disabling OSC context for serial consoles
+
+Serial terminals such as minicom may print OSC 3008 payloads literally.
+Allow serial-getty services to opt out without changing TERM or disabling
+PAM session registration.
+
+Upstream-Status: Inappropriate [BSP serial-console policy]
+
+--- a/src/login/pam_systemd.c
++++ b/src/login/pam_systemd.c
+@@ -1625,2 +1625,7 @@
+         assert(ur);
+ 
++        /* Serial terminal emulators may not understand OSC 3008. Allow the
++         * getty service to suppress metadata without changing TERM. */
++        if (!getenv_harder_bool(handle, "SYSTEMD_OSC_CONTEXT", true))
++                return PAM_SUCCESS;
++
