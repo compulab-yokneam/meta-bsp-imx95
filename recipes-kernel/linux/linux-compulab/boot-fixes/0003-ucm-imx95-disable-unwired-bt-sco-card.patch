@@ -1,0 +1,18 @@
+Subject: [PATCH] arm64: dts: compulab: disable the unwired Bluetooth SCO card
+
+Keep the SCO sound card disabled while its SAI1 CPU DAI is disabled.
+Boards wiring SAI1 PCM must enable the interface and card together.
+
+Upstream-Status: Pending
+
+--- a/arch/arm64/boot/dts/compulab/ucm-imx95-som.dts
++++ b/arch/arm64/boot/dts/compulab/ucm-imx95-som.dts
+@@ -264,6 +264,8 @@
+ 
+ 	sound-bt-sco {
+ 		compatible = "simple-audio-card";
++		/* Enable this card together with its SAI1 PCM interface. */
++		status = "disabled";
+ 		simple-audio-card,name = "bt-sco-audio";
+ 		simple-audio-card,format = "dsp_a";
+ 		simple-audio-card,bitclock-inversion;
