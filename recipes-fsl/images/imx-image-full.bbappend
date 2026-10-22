@@ -83,4 +83,29 @@ method=disabled
 AP
     chmod 0600 $connections/UCM-AP.nmconnection
 
+    # Fresh images use either Ethernet as upstream, with eth0 preferred.
+    for port in 0 1; do
+        if [ "$port" = 0 ]; then metric=100; else metric=200; fi
+        cat > $connections/UCM-eth$port.nmconnection <<ETHERNET
+[connection]
+id=UCM-eth$port
+type=ethernet
+interface-name=eth$port
+autoconnect=true
+autoconnect-priority=50
+
+[ethernet]
+
+[ipv4]
+method=auto
+route-metric=$metric
+never-default=false
+
+[ipv6]
+method=auto
+route-metric=$metric
+never-default=false
+ETHERNET
+        chmod 0600 $connections/UCM-eth$port.nmconnection
+    done
 }
