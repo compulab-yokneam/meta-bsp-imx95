@@ -30,7 +30,10 @@ PRESET
 }
 
 # AP sharing defaults. Append to the existing imx-image-full.bbappend.
-ROOTFS_POSTPROCESS_COMMAND += "ucm_ap_sharing_defaults; "
+ROOTFS_POSTPROCESS_COMMAND += " \
+    ucm_ap_sharing_defaults; \
+    ucm_reject_private_wifi_profiles; \
+"
 
 ucm_ap_sharing_defaults() {
     netdir="${IMAGE_ROOTFS}${sysconfdir}/NetworkManager"
@@ -108,4 +111,28 @@ never-default=false
 ETHERNET
         chmod 0600 $connections/UCM-eth$port.nmconnection
     done
+}
+
+python ucm_reject_private_wifi_profiles() {
+    import configparser
+    from pathlib import Path
+    root = Path(d.getVar('IMAGE_ROOTFS'))
+    directory = root / 'etc/NetworkManager/system-connections'
+    for path in directory.iterdir():
+        if not path.is_file():
+            continue
+        config = configparser.ConfigParser(interpolation=None, strict=False)
+        config.read(path)
+        kind = config.get('connection', 'type', fallback='')
+        if kind in ('wifi', '802-11-wireless'):
+            if (path.name != 'UCM-AP.nmconnection' or
+                config.get('wifi', 'mode', fallback='') != 'ap' or
+                config.get('wifi', 'ssid', fallback='') != 'UCM-iMX95-AP'):
+                bb.fatal(
+                    'Personal/upstream Wi-Fi profiles must not be '
+                    'packaged in this release image'
+                )
+    # A local module overlay must never reintroduce the old workaround.
+    if any((root / 'lib/modules').glob('*/updates/xt_comment.ko*')):
+        bb.fatal('External xt_comment workaround found in rootfs')
 }
