@@ -1,4 +1,5 @@
 BBLAYERS += " \
     ${BSPDIR}/sources/meta-compulab/meta-desktop \
     ${BSPDIR}/sources/meta-compulab-bsp/meta-desktop \
+    ${BSPDIR}/sources/meta-compulab-bsp/meta-utils \
 "
