@@ -34,10 +34,7 @@ DEFAULT_PREFERENCE = "1"
 
 KERNEL_VERSION_SANITY_SKIP = "1"
 
-# Merged from the bbappend
-FILESEXTRAPATHS:prepend := "${THISDIR}/compulab/${PV}/imx95:"
-
-require compulab/${PV}/imx95.inc
+require ${PN}/${PV}/imx95.inc
 
 LINUX_VERSION_EXTENSION = "-${CL_RELEASE}"
 
