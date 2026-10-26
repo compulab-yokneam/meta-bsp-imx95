@@ -19,6 +19,16 @@ M7_IMAGE_PATTERN:compulab-mx952 = "imx952evk_m7_TCM*.bin"
 SOC_DIR:compulab-mx95 = "iMX95"
 SOC_DIR:compulab-mx952 = "iMX952"
 
+# Recursive rm_work follows runtime dependencies as well as build inputs. For
+# this firmware-only target that pulls in unrelated packages and the kernel.
+# Keep this recipe's cleanup and its explicit firmware deployment dependencies;
+# full image builds still perform recursive cleanup through their own task.
+python () {
+    overrides = set((d.getVar("MACHINEOVERRIDES") or "").split(":"))
+    if overrides.intersection({"compulab-mx95", "compulab-mx952"}) and bb.data.inherits_class("rm_work", d):
+        d.delVarFlag("do_rm_work_all", "recrdeptask")
+}
+
 deploy_compulab_boot_tools() {
 
     sed 's/\.\.\/mkimage_imx8/\.\/mkimage_imx8/g;s/rm -f $(MKIMG)/rm -f/g' ${S}/${SOC_DIR}/soc.mak > ${DEPLOYDIR}/${BOOT_TOOLS}/Makefile
