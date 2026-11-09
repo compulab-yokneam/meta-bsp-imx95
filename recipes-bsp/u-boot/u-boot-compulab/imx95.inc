@@ -9,3 +9,4 @@ SRC_URI:append = " \
 "
 
 SRC_URI:append:mcm-imx95-sbc = " file://mcm-imx95.cfg file://mcm-imx95-sbc.cfg "
+SRC_URI:append:mcm-imx95-lctvd-icm = " file://u-boot-lctvd-icm-clean.patch "

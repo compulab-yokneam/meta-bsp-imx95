@@ -1,0 +1,110 @@
+From a9be7bd0e15bde39ad8a1b069c886175c980fc6c Mon Sep 17 00:00:00 2001
+From: Kirill Kapranov <kirill.kapranov@compulab.co.il>
+Date: Tue, 3 Nov 2026 20:57:55 +0200
+Subject: [PATCH 1/1] imx95: assign UART2 and CAN1 to A55 for LCTVD-ICM
+
+Move UART2 and its pads from M33, and CAN_FD1 from M7, to A55.
+UART1 and UART3-8 are already A55-owned in the CompuLab Q1
+configuration, including GPIO_IO14/15 used by UART4. Disable
+System Manager UART2 debug output since A55 now owns that port.
+
+Upstream-Status: Inappropriate [customer board configuration]
+
+Signed-off-by: Kirill Kapranov <kirill.kapranov@compulab.co.il>
+---
+ configs/mx95cpl.cfg | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/configs/mx95cpl.cfg b/configs/mx95cpl.cfg
+index 0cb3649..a1e8c72 100755
+--- a/configs/mx95cpl.cfg
++++ b/configs/mx95cpl.cfg
+@@ -41,7 +41,7 @@ include ../devices/MIMX95/configtool/device.cfg
+ # Board                                                                    #
+ #==========================================================================#
+ 
+-BOARD               DEBUG_UART_INSTANCE=2
++BOARD               DEBUG_UART_INSTANCE=0
+ BOARD               DEBUG_UART_BAUDRATE=115200
+ 
+ BOARD               I2C_INSTANCE=1
+@@ -233,7 +233,6 @@ IOMUXC              OWNER
+ IOMUX_GPR           OWNER
+ JTAG                OWNER
+ LPI2C1              OWNER
+-LPUART2             OWNER
+ M33_CACHE_CTRL      OWNER
+ M33_PCF             OWNER
+ M33_PSF             OWNER
+@@ -307,8 +306,6 @@ PIN_FCCU_ERR0         OWNER
+ PIN_I2C1_SCL          OWNER
+ PIN_I2C1_SDA          OWNER
+ PIN_PDM_BIT_STREAM1   OWNER
+-PIN_UART2_RXD         OWNER
+-PIN_UART2_TXD         OWNER
+ PIN_WDOG_ANY          OWNER
+ 
+ # Memory
+@@ -384,14 +381,12 @@ SYS                       ALL
+ # Resources
+ 
+ M7P                 OWNER  # CPUs must be first
+-CAN_FD1             OWNER
+ FSB                 READONLY
+ IRQSTEER_M7         OWNER
+ LPIT1               OWNER
+ LPTMR1              OWNER
+ LPTMR2              OWNER
+ LPTPM1              OWNER
+-LPUART3             OWNER, test
+ MSGINTR1            OWNER
+ MSGINTR2            OWNER
+ MU5_A               OWNER
+@@ -406,9 +401,6 @@ WDOG5               OWNER
+ 
+ # Pins
+ 
+-PIN_GPIO_IO14       OWNER
+-PIN_GPIO_IO15       OWNER
+-
+ # Memory
+ 
+ M7MIX               DATA, begin=0x020380000, end=0x02047FFFF
+@@ -609,6 +601,7 @@ CAMERA5             OWNER
+ CAMERA6             OWNER
+ CAMERA7             OWNER
+ CAMERA8             OWNER
++CAN_FD1             OWNER
+ CAN_FD2             OWNER
+ CAN_FD3             OWNER
+ CAN_FD4             OWNER
+@@ -782,6 +775,8 @@ LPTPM4              OWNER
+ LPTPM5              OWNER
+ LPTPM6              OWNER
+ LPUART1             OWNER
++LPUART2             OWNER
++LPUART3             OWNER
+ LPUART4             OWNER
+ LPUART5             OWNER
+ LPUART6             OWNER
+@@ -937,6 +932,8 @@ PIN_GPIO_IO10        OWNER
+ PIN_GPIO_IO11        OWNER
+ PIN_GPIO_IO12        OWNER
+ PIN_GPIO_IO13        OWNER
++PIN_GPIO_IO14       OWNER
++PIN_GPIO_IO15       OWNER
+ PIN_GPIO_IO16        OWNER
+ PIN_GPIO_IO17        OWNER
+ PIN_GPIO_IO18        OWNER
+@@ -995,6 +992,8 @@ PIN_SD3_DATA2        OWNER
+ PIN_SD3_DATA3        OWNER
+ PIN_UART1_RXD        OWNER, test
+ PIN_UART1_TXD        OWNER
++PIN_UART2_RXD        OWNER
++PIN_UART2_TXD        OWNER
+ PIN_XSPI1_DATA0      OWNER
+ PIN_XSPI1_DATA1      OWNER
+ PIN_XSPI1_DATA2      OWNER
+-- 
+2.34.1
+

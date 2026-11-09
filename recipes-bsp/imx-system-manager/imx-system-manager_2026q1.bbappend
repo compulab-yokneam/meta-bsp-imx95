@@ -11,5 +11,7 @@ SRC_URI += " \
 	file://0008-configs-mx95cplrpmsg.cfg-Apply-all-NXP-restrictions.patch \
 "
 
+SRC_URI:append:mcm-imx95-lctvd-icm = " file://0009-imx95-assign-UART2-and-CAN1-to-A55-for-LCTVD-ICM.patch "
+
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=f2a70813bc08547f509361c08b718861"
 SRCREV = "af1e37026c6ba19cdca98fd6e91494efd3e7b5ec"

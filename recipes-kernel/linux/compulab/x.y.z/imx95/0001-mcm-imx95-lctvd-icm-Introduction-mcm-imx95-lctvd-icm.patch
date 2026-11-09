@@ -1,0 +1,147 @@
+From 9098db49aba8442916324827b3cc57e79781a867 Mon Sep 17 00:00:00 2001
+From: invalid_git config <unknown@unknown>
+Date: Wed, 4 Nov 2026 14:09:30 +0000
+Subject: [PATCH 1/1] mcm-imx95:lctvd-icm: Introduction mcm-imx95-lctvd-icm
+
+Signed-off-by: Kirill Kapranov <kirill.kapranov@compulab.co.il>
+---
+ arch/arm64/boot/dts/compulab/Makefile         |   2 +-
+ .../boot/dts/compulab/Makefile.mcm-imx95      |   1 +
+ .../dts/compulab/sbc-mcm-imx95-lctvd-icm.dts  | 107 ++++++++++++++++++
+ 3 files changed, 109 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/boot/dts/compulab/sbc-mcm-imx95-lctvd-icm.dts
+
+diff --git a/arch/arm64/boot/dts/compulab/Makefile b/arch/arm64/boot/dts/compulab/Makefile
+index fbdefb0ce4e5..0dd9a86289db 100644
+--- a/arch/arm64/boot/dts/compulab/Makefile
++++ b/arch/arm64/boot/dts/compulab/Makefile
+@@ -13,4 +13,4 @@ include $(srctree)/arch/arm64/boot/dts/compulab/Makefile.ucm-imx93
+ include $(srctree)/arch/arm64/boot/dts/compulab/Makefile.mcm-imx93
+ include $(srctree)/arch/arm64/boot/dts/compulab/Makefile.ucm-imx95
+ include $(srctree)/arch/arm64/boot/dts/compulab/Makefile.ucm-imx952
+-#include $(srctree)/arch/arm64/boot/dts/compulab/Makefile.mcm-imx95
++include $(srctree)/arch/arm64/boot/dts/compulab/Makefile.mcm-imx95
+diff --git a/arch/arm64/boot/dts/compulab/Makefile.mcm-imx95 b/arch/arm64/boot/dts/compulab/Makefile.mcm-imx95
+index 2d9fcdc2a9bd..894ac314eb56 100644
+--- a/arch/arm64/boot/dts/compulab/Makefile.mcm-imx95
++++ b/arch/arm64/boot/dts/compulab/Makefile.mcm-imx95
+@@ -1,2 +1,3 @@
+ DTC_FLAGS := -@
+ dtb-$(CONFIG_ARCH_MXC) += mcm-imx95-sbc.dtb
++dtb-$(CONFIG_ARCH_MXC) += sbc-mcm-imx95-lctvd-icm.dtb
+diff --git a/arch/arm64/boot/dts/compulab/sbc-mcm-imx95-lctvd-icm.dts b/arch/arm64/boot/dts/compulab/sbc-mcm-imx95-lctvd-icm.dts
+new file mode 100644
+index 000000000000..39165ea6f348
+--- /dev/null
++++ b/arch/arm64/boot/dts/compulab/sbc-mcm-imx95-lctvd-icm.dts
+@@ -0,0 +1,107 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * LCTVD-ICM carrier for the CompuLab MCM-iMX95
++ */
++
++/dts-v1/;
++
++#include "mcm-imx95-som.dtsi"
++
++/ {
++	model = "CompuLab MCM-iMX95 on LCTVD-ICM";
++};
++
++&netcmix_blk_ctrl {
++	status = "okay";
++};
++
++&netc_blk_ctrl {
++	status = "okay";
++};
++
++&netc_emdio {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_emdio>;
++	status = "okay";
++
++	ethphy0: ethernet-phy@4 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <4>;
++		eee-broken-1000t;
++		reset-gpios = <&gpio5 12 GPIO_ACTIVE_LOW>;
++		reset-assert-us = <10000>;
++		reset-deassert-us = <80000>;
++		realtek,clkout-disable;
++	};
++};
++
++&pinctrl_enetc0 {
++	fsl,pins = <
++		IMX95_PAD_GPIO_IO32__GPIO5_IO_BIT12			0x3fe
++		IMX95_PAD_ENET1_TD3__NETCMIX_TOP_ETH0_RGMII_TD3	0x57e
++		IMX95_PAD_ENET1_TD2__NETCMIX_TOP_ETH0_RGMII_TD2	0x57e
++		IMX95_PAD_ENET1_TD1__NETCMIX_TOP_ETH0_RGMII_TD1	0x57e
++		IMX95_PAD_ENET1_TD0__NETCMIX_TOP_ETH0_RGMII_TD0	0x57e
++		IMX95_PAD_ENET1_TX_CTL__NETCMIX_TOP_ETH0_RGMII_TX_CTL	0x57e
++		IMX95_PAD_ENET1_TXC__NETCMIX_TOP_ETH0_RGMII_TX_CLK	0x58e
++		IMX95_PAD_ENET1_RX_CTL__NETCMIX_TOP_ETH0_RGMII_RX_CTL	0x57e
++		IMX95_PAD_ENET1_RXC__NETCMIX_TOP_ETH0_RGMII_RX_CLK	0x58e
++		IMX95_PAD_ENET1_RD0__NETCMIX_TOP_ETH0_RGMII_RD0	0x57e
++		IMX95_PAD_ENET1_RD1__NETCMIX_TOP_ETH0_RGMII_RD1	0x57e
++		IMX95_PAD_ENET1_RD2__NETCMIX_TOP_ETH0_RGMII_RD2	0x57e
++		IMX95_PAD_ENET1_RD3__NETCMIX_TOP_ETH0_RGMII_RD3	0x57e
++	>;
++};
++
++&enetc_port1 {
++	/delete-property/ phy-handle;
++	status = "disabled";
++};
++
++&flexcan1 {
++	status = "disabled";
++};
++
++&flexcan2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_flexcan2>;
++	status = "okay";
++};
++
++&micfil {
++	status = "disabled";
++};
++
++&lpuart3 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_uart3>;
++	status = "okay";
++};
++
++&scmi_iomuxc {
++	pinctrl_uart3: uart3grp {
++		fsl,pins = <
++			IMX95_PAD_GPIO_IO14__LPUART3_TX			0x31e
++			IMX95_PAD_GPIO_IO15__LPUART3_RX			0x31e
++		>;
++	};
++
++	pinctrl_uart2: uart2grp {
++		fsl,pins = <
++			IMX95_PAD_UART2_TXD__AONMIX_TOP_LPUART2_TX	0x31e
++			IMX95_PAD_UART2_RXD__AONMIX_TOP_LPUART2_RX	0x31e
++		>;
++	};
++};
++
++&lpuart5 {
++	status = "disabled";
++};
++
++&usdhc3 {
++	status = "disabled";
++};
++
++&pcie0 {
++	status = "disabled";
++};
+-- 
+2.34.1
+

@@ -50,6 +50,9 @@ IMAGE_INSTALL:append = " \
 	kernel-modules \
 	kernel-devicetree \
 "
+IMAGE_INSTALL:append = " net-tools can-utils minicom ntp socat "
+IMAGE_INSTALL:append = " cl-uboot cl-deploy "
+IMAGE_INSTALL:append = " memtester htop iotop tmux iperf3 "
 
 PREFERRED_RROVIDER_u-boot-fw-utils = "libubootenv-bin"
 
