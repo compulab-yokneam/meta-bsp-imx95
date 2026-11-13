@@ -10,7 +10,6 @@ require conf/machine/include/imx-base.inc
 require conf/machine/include/arm/armv8-2a/tune-cortexa55.inc
 
 MACHINE_FEATURES += "pci wifi bluetooth optee"
-MACHINE_FEATURES:append:use-nxp-bsp = " nxpwifi-all-pcie nxpwifi-all-sdio jailhouse dpdk xen"
 
 IMX_DEFAULT_BOOTLOADER:use-nxp-bsp = "u-boot-compulab"
 IMX_DEFAULT_BOOTLOADER:use-mainline-bsp = "u-boot-compulab"
