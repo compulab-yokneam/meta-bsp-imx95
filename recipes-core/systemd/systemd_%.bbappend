@@ -1,3 +1,6 @@
+# NetworkManager configures the network interfaces.
+SYSTEMD_AUTO_ENABLE:${PN}-networkd = "disable"
+
 # Suppress OSC 3008 shell prompt hooks without patching systemd sources.
 PACKAGECONFIG:remove = "osc-context"
 
