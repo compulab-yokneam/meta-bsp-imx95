@@ -20,6 +20,15 @@ The diagram uses UCM-iMX95 as its example target.
 ## Block Diagram
 
 ```mermaid
+---
+config:
+  htmlLabels: false
+  flowchart:
+     wrappingWidth: 220
+     padding: 16
+     nodeSpacing: 25
+     rankSpacing: 35
+---
 flowchart TD
     A["NXP BSP manifest<br/>LF6.18.20_2.0.0 / Wrynose"]
     B["CompuLab local manifest<br/>CompuLab repositories and branches"]
