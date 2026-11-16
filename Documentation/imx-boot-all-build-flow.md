@@ -16,6 +16,15 @@ The recipe supports the `compulab-mx95` family: currently `ucm-imx95` and
 ## Block Diagram
 
 ```mermaid
+---
+config:
+  htmlLabels: false
+  flowchart:
+     wrappingWidth: 220
+     padding: 16
+     nodeSpacing: 25
+     rankSpacing: 35
+---
 flowchart TD
     A["Build request<br/>bitbake imx-boot-all"]
     B["Select machine and matrix<br/>SD U-Boot defconfig, board fragments<br/>Revisions, DDR types, capacities and boot targets"]
