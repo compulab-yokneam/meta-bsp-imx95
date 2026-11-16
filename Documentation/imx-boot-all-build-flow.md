@@ -54,8 +54,8 @@ flowchart TD
     H --> L
     N --> O["Complete bundle<br/>20 containers with default settings<br/>40 binary files including tagged copies"]
 
-    O --> P["do_deploy<br/>Publish matrix directories<br/>and SHA256SUMS"]
-    O --> Q["do_install and package tasks<br/>Install under /boot/imx-boot-all<br/>Create the machine-specific package"]
+    O --> P["Selected variant deploy task<br/>Publish its matrix and SHA256SUMS<br/>Retain the other variant directory"]
+    O --> Q["do_install and package tasks<br/>Install under /boot/imx-boot-all/SM-config<br/>Create the machine-specific package"]
 ```
 
 The arrows show data dependencies. BitBake may build independent firmware
@@ -98,7 +98,8 @@ timing configuration.
 | `boot_matrix_uboot()` | Applies the selected machine's U-Boot configuration and builds one capacity |
 | `boot_matrix_variant()` | Builds the selected OEI pair, assembles both requested targets, and creates tagged copies |
 | `boot_matrix_copy()` | Checks that an input exists and is nonempty before staging it |
-| `do_deploy` | Publishes the bundle and generates checksums |
+| `do_deploy` | Public entry point; depends on the selected variant-specific deploy task |
+| `do_deploy_mx95cpl` / `do_deploy_mx95cplrpmsg` | Publish the selected matrix with its own checksum file and sstate manifest, retaining the other variant |
 | `do_install` and packaging tasks | Package the binary matrix under `/boot/imx-boot-all/` |
 
 `do_configure` is disabled for this recipe. U-Boot configuration is performed
@@ -135,6 +136,19 @@ and default device-tree filename.
 | System Manager | Shared across the matrix, using the current build's System Manager configuration |
 | M7 firmware | Shared selected demo; embedded by `flash_all` |
 
+Select the shared System Manager firmware with `IMXBOOT_VARIANT = "mx95cpl"`
+or `IMXBOOT_VARIANT = "mx95cplrpmsg"` in `conf/local.conf`. An empty/unset value
+selects `mx95cpl`; the existing `rpmsg` spelling remains an alias for
+`mx95cplrpmsg`. The selected configuration is used by both the firmware recipe
+and `imx-boot-all`, ensuring that the bundle stages the matching firmware.
+One build selects one System Manager variant; it does not add another dimension
+to the matrix. Sequential builds retain both configurations in separate
+subdirectories. Separate deploy task names and sstate manifests prevent a switch
+or cache restoration from removing the other configuration's deployed files.
+The selected variant is refreshed from the current matrix, so subset builds can
+remove its previously tracked combinations. See the
+[variant selection instructions](imx-boot-all.md#select-the-system-manager-variant).
+
 The helper tasks are defined in the
 [ELE firmware append](../recipes-bsp/firmware-imx/firmware-ele-imx_%.bbappend)
 and [DDR firmware append](../recipes-bsp/firmware-imx/imx-boot-firmware-files_%.bbappend).
@@ -147,32 +161,39 @@ Each machine has a separate deployment directory:
 
 ```text
 tmp/deploy/images/${MACHINE}/imx-boot-all/
-├── SHA256SUMS
-├── A0/
-│   ├── D4/
-│   │   ├── lpddr5/
-│   │   │   ├── flash_all/
-│   │   │   │   ├── flash.bin
-│   │   │   │   └── flash.bin.tagged
-│   │   │   └── flash_lpboot_sm_a55/
-│   │   │       ├── flash.bin
-│   │   │       └── flash.bin.tagged
-│   │   └── lpddr4x/...
-│   ├── D8/...
-│   └── D16/lpddr5/...
-└── B0/...
+├── mx95cpl/
+│   ├── SHA256SUMS
+│   ├── A0/
+│   │   ├── D4/
+│   │   │   ├── lpddr5/
+│   │   │   │   ├── flash_all/
+│   │   │   │   │   ├── flash.bin
+│   │   │   │   │   └── flash.bin.tagged
+│   │   │   │   └── flash_lpboot_sm_a55/...
+│   │   │   └── lpddr4x/...
+│   │   ├── D8/...
+│   │   └── D16/lpddr5/...
+│   └── B0/...
+└── mx95cplrpmsg/
+    ├── SHA256SUMS
+    ├── A0/...
+    └── B0/...
 ```
 
-The corresponding package installs the same binary hierarchy under
-`/boot/imx-boot-all/`. This target does not replace the normal `imx-boot`
+The corresponding package installs the selected variant under
+`/boot/imx-boot-all/${SYSTEM_MANAGER_CONFIG}/`. The DEB contains one selected
+variant, while the deployment directory can retain both after two builds. This target does not replace the normal `imx-boot`
 artifacts or automatically add the bundle to a root filesystem image.
 
 ## Validation and Usage
 
 Full builds have passed for both `ucm-imx95` and `mcm-imx95-sbc`. The generated
 matrix, checksums, and UUU tags were verified, as were the MCM prompt and default
-device-tree strings. Hardware boot and memory testing remain necessary for
-each board configuration.
+device-tree strings. Variant retention was tested on UCM-iMX95 by building
+`mx95cpl`, switching to `mx95cplrpmsg`, and switching back. An actual sstate
+restoration of the CPL deployment also preserved both variants byte-for-byte.
+Each variant retained 20 containers, 20 tagged copies, and its own checksum file.
+Hardware boot and memory testing remain necessary for each board configuration.
 
 See [Build the CompuLab i.MX95 Boot Container Matrix](imx-boot-all.md) for build
 commands, subset selection, output verification, and source-pin maintenance.

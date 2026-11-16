@@ -72,6 +72,10 @@ IMX_BOOT_ALL_ATF = "${DEPLOY_DIR_IMAGE}/bl31-${ATF_PLATFORM}.bin-optee"
 python __anonymous() {
     if 'compulab-mx95' not in (d.getVar('MACHINEOVERRIDES') or '').split(':'):
         return
+    variant = (d.getVar('IMXBOOT_VARIANT') or '').strip()
+    if variant not in ('', 'mx95cpl', 'mx95cplrpmsg', 'rpmsg'):
+        bb.fatal('imx-boot-all: IMXBOOT_VARIANT must be mx95cpl or mx95cplrpmsg '
+                 '(empty selects mx95cpl; rpmsg is a legacy alias for mx95cplrpmsg)')
     if not d.getVar('IMX_BOOT_ALL_UBOOT_DEFCONFIG'):
         bb.fatal('imx-boot-all requires an SD U-Boot defconfig; set IMX_BOOT_ALL_UBOOT_DEFCONFIG')
     choices = {
@@ -86,6 +90,13 @@ python __anonymous() {
         if not values or len(values) != len(set(values)) or set(values) - supported:
             bb.fatal('%s must contain unique values from: %s' %
                      (variable, ' '.join(sorted(supported))))
+    # Only the selected deploy task enters this build's dependency graph.
+    # Separate task names give each variant its own sstate manifest, so stale
+    # state cleanup for one configuration cannot delete the other one's files.
+    sm_config = d.getVar('SYSTEM_MANAGER_CONFIG')
+    if sm_config not in ('mx95cpl', 'mx95cplrpmsg'):
+        bb.fatal('imx-boot-all: unsupported SYSTEM_MANAGER_CONFIG: %s' % sm_config)
+    bb.build.addtask('do_deploy_' + sm_config, 'do_deploy', 'do_compile', d)
 }
 
 do_configure[noexec] = "1"
@@ -220,20 +231,60 @@ do_compile() {
 }
 
 do_install() {
-    install -d "${D}/boot/${PN}"
-    cp -R "${B}/output/." "${D}/boot/${PN}/"
+    install -d "${D}/boot/${PN}/${SYSTEM_MANAGER_CONFIG}"
+    cp -R "${B}/output/." "${D}/boot/${PN}/${SYSTEM_MANAGER_CONFIG}/"
 }
 
+# Keep the standard deploy task as the public entry point. Its own sstate
+# manifest is empty; all payloads are owned by the variant-specific tasks.
 do_deploy() {
-    install -d "${DEPLOYDIR}/${PN}"
-    cp -R "${B}/output/." "${DEPLOYDIR}/${PN}/"
+    :
+}
+addtask deploy after do_compile before do_build
+
+boot_matrix_deploy() {
+    sm_config="$1"
+    [ "$sm_config" = "${SYSTEM_MANAGER_CONFIG}" ] || \
+        bbfatal "Select IMXBOOT_VARIANT=$sm_config before deploying this variant"
+    destination="${WORKDIR}/deploy-${PN}-$sm_config/${PN}/$sm_config"
+    install -d "$destination"
+    cp -R "${B}/output/." "$destination/"
     (
-        cd "${DEPLOYDIR}/${PN}"
+        cd "$destination"
         find . -type f -name 'flash.bin*' -print0 | sort -z | \
             xargs -0 sha256sum > SHA256SUMS
     )
 }
-addtask deploy after do_compile before do_build
+
+do_deploy_mx95cpl() {
+    boot_matrix_deploy mx95cpl
+}
+do_deploy_mx95cplrpmsg() {
+    boot_matrix_deploy mx95cplrpmsg
+}
+addtask deploy_mx95cpl after do_compile
+addtask deploy_mx95cplrpmsg after do_compile
+
+SSTATETASKS += "do_deploy_mx95cpl do_deploy_mx95cplrpmsg"
+do_deploy_mx95cpl[dirs] = "${B}"
+do_deploy_mx95cpl[cleandirs] = "${WORKDIR}/deploy-${PN}-mx95cpl"
+do_deploy_mx95cpl[stamp-extra-info] = "${MACHINE_ARCH}"
+do_deploy_mx95cpl[sstate-inputdirs] = "${WORKDIR}/deploy-${PN}-mx95cpl"
+do_deploy_mx95cpl[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
+do_deploy_mx95cplrpmsg[dirs] = "${B}"
+do_deploy_mx95cplrpmsg[cleandirs] = "${WORKDIR}/deploy-${PN}-mx95cplrpmsg"
+do_deploy_mx95cplrpmsg[stamp-extra-info] = "${MACHINE_ARCH}"
+do_deploy_mx95cplrpmsg[sstate-inputdirs] = "${WORKDIR}/deploy-${PN}-mx95cplrpmsg"
+do_deploy_mx95cplrpmsg[sstate-outputdirs] = "${DEPLOY_DIR_IMAGE}"
+
+python do_deploy_mx95cpl_setscene() {
+    sstate_setscene(d)
+}
+python do_deploy_mx95cplrpmsg_setscene() {
+    sstate_setscene(d)
+}
+addtask deploy_mx95cpl_setscene
+addtask deploy_mx95cplrpmsg_setscene
 
 FILES:${PN} = "/boot/${PN}"
 PACKAGE_ARCH = "${MACHINE_ARCH}"

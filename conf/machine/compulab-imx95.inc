@@ -45,7 +45,9 @@ DDR_FIRMWARE_NAME:lpddr4x = " \
 
 M4_DEFAULT_IMAGE_MX95 = "imx95-19x19-evk_m7_TCM_power_mode_switch.bin"
 
-SYSTEM_MANAGER_CONFIG = "${@bb.utils.contains('IMXBOOT_VARIANT','rpmsg','mx95cplrpmsg','mx95cpl', d)}"
+# Accept the System Manager config names directly; retain the legacy rpmsg alias.
+# This mapping must be shared by the firmware recipe and its boot consumers.
+SYSTEM_MANAGER_CONFIG = "${@bb.utils.contains_any('IMXBOOT_VARIANT', 'rpmsg mx95cplrpmsg', 'mx95cplrpmsg', 'mx95cpl', d)}"
 
 IMXBOOT_TARGETS = "${IMXBOOT_TARGETS_BASENAME}_all ${IMXBOOT_TARGETS_BASENAME}_lpboot_sm_a55"
 

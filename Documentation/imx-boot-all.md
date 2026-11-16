@@ -82,6 +82,55 @@ of `imx-boot-all` and do not run as part of normal firmware builds.
 Each build directory is private to this recipe. Existing `imx-boot` artifacts,
 normal U-Boot/OEI source trees, and default image boot links are not replaced.
 
+## Select the System Manager Variant
+
+Set one of these values in the build directory's `conf/local.conf`:
+
+```bitbake
+IMXBOOT_VARIANT = "mx95cpl"
+```
+
+or:
+
+```bitbake
+IMXBOOT_VARIANT = "mx95cplrpmsg"
+```
+
+Then run `bitbake imx-boot-all`. The selection is shared by the System Manager
+recipe and the boot bundle, so BitBake builds and stages the matching firmware:
+
+| `IMXBOOT_VARIANT` | System Manager input |
+|---|---|
+| `mx95cpl` or empty/unset | `m33_image-mx95cpl.bin` |
+| `mx95cplrpmsg` | `m33_image-mx95cplrpmsg.bin` |
+| `rpmsg` (legacy alias) | `m33_image-mx95cplrpmsg.bin` |
+
+One invocation builds the revision/DDR/capacity matrix with one selected
+System Manager variant. Each variant is deployed into its own directory:
+
+```text
+${DEPLOY_DIR_IMAGE}/imx-boot-all/mx95cpl/
+${DEPLOY_DIR_IMAGE}/imx-boot-all/mx95cplrpmsg/
+```
+
+Build once with `IMXBOOT_VARIANT = "mx95cpl"`, then change it to
+`"mx95cplrpmsg"` and build again. Both matrices remain available. Rebuilding one
+variant refreshes its matrix and checksum file while retaining the other
+variant's files, including when the selected variant is restored from sstate.
+Each selected variant reflects the currently requested matrix; a subset build
+can remove previously tracked combinations from that variant only.
+
+The existing recipe defines separate deploy tasks for the two configurations,
+so each has an independent sstate manifest. The standard `do_deploy` task
+selects the appropriate task. Private staging directories are cleaned normally;
+the shared deployment root is not cleared by switching configurations. Explicit
+clean commands or manual deletion can still remove deployed files.
+
+Use the matching RPMsg device tree when booting the RPMsg System Manager
+configuration. This setting does not automatically select a Linux device tree
+or change the configured M7 demo firmware. Unknown variant values are rejected
+by `imx-boot-all` during parsing.
+
 ## Output
 
 Deployed files are under:
@@ -94,31 +143,39 @@ For example, a UCM-iMX95 build produces:
 
 ```text
 tmp/deploy/images/ucm-imx95/imx-boot-all/
-├── SHA256SUMS
-├── A0/
-│   ├── D4/
-│   │   ├── lpddr5/
-│   │   │   ├── flash_all/
-│   │   │   │   ├── flash.bin
-│   │   │   │   └── flash.bin.tagged
-│   │   │   └── flash_lpboot_sm_a55/
-│   │   │       ├── flash.bin
-│   │   │       └── flash.bin.tagged
-│   │   └── lpddr4x/...
-│   ├── D8/...
-│   └── D16/lpddr5/...
-└── B0/...
+├── mx95cpl/
+│   ├── SHA256SUMS
+│   ├── A0/
+│   │   ├── D4/
+│   │   │   ├── lpddr5/
+│   │   │   │   ├── flash_all/
+│   │   │   │   │   ├── flash.bin
+│   │   │   │   │   └── flash.bin.tagged
+│   │   │   │   └── flash_lpboot_sm_a55/...
+│   │   │   └── lpddr4x/...
+│   │   ├── D8/...
+│   │   └── D16/lpddr5/...
+│   └── B0/...
+└── mx95cplrpmsg/
+    ├── SHA256SUMS
+    ├── A0/...
+    └── B0/...
 ```
 
 Verify the deployed checksums with:
 
 ```bash
-cd tmp/deploy/images/ucm-imx95/imx-boot-all
+cd tmp/deploy/images/ucm-imx95/imx-boot-all/mx95cpl
+sha256sum -c SHA256SUMS
+
+cd ../mx95cplrpmsg
 sha256sum -c SHA256SUMS
 ```
 
 The recipe also creates an `imx-boot-all` package containing the boot
-containers under `/boot/imx-boot-all/`. In a DEB-based build its package is
+selected variant's containers under `/boot/imx-boot-all/${SYSTEM_MANAGER_CONFIG}/`.
+The package contains the current build's variant only; it does not collect
+previous deployment contents. In a DEB-based build its package is
 available in `tmp/deploy/deb/` under the machine package architecture.
 
 ## Build a Subset
