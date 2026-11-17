@@ -1,10 +1,6 @@
 # Building Boot Firmware 
 
-## [External Build](https://github.com/compulab-yokneam/u-boot-compulab/blob/u-boot-compulab_v2024.04/README.md)
-
-## Internal Build
-
-### Yocto devtool method
+## Yocto devtool method
 
 Use this method in order to modify and compile compulab u-boot in the Yocto environment.<br>
 

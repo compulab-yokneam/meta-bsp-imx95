@@ -1,7 +1,7 @@
 # CompuLab i.MX95 BSP Build Flow
 
 This document describes the source-level build flow of the local
-`meta-bsp-imx95` layer, branch `wrynose-6.18.20-2.0.0`, reviewed with HEAD at
+`meta-bsp-imx95` layer, branch `wrynose-6.18.20-2.0.0-EVAL-UCM-iMX95-3.0`, reviewed with HEAD at
 `847707e0e29bf2f547738da9a9c032c4eb848519`.
 It also considers the connected layers and configuration in the current
 `build-ucm-imx95` workspace. The layer's [README](../README.md) identifies the

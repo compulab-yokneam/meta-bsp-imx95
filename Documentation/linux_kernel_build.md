@@ -21,7 +21,7 @@ export MACHINE=ucm-imx95
 
 * Clone the source code:
 ```
-git clone -b linux-compulab_v6.6.36 https://github.com/compulab-yokneam/linux-compulab.git
+git clone -b linux-compulab_v6.18.20 https://github.com/compulab-yokneam/linux-compulab.git
 cd linux-compulab
 ```
 
