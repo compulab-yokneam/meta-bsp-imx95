@@ -20,6 +20,38 @@
     MACHINE=${COMPULAB_MACHINE} source compulab-setup-env build-${COMPULAB_MACHINE}
     ```
 
+## Per-command hardware settings
+
+Initialize or re-enter the build environment through the CompuLab helper:
+
+```bash
+source compulab-setup-env build-ucm-imx95
+```
+
+The helper enables `IMXBOOT_VARIANT`, `DDR_TYPE`, and `DRAM_CONF` environment
+passthrough to BitBake. Set them for one command, like `MACHINE`:
+
+```bash
+MACHINE=ucm-imx95 IMXBOOT_VARIANT=mx95cplrpmsg DDR_TYPE=lpddr4x DRAM_CONF=D4 bitbake imx-boot
+```
+
+The assignments apply only to that command. Re-source the helper in existing
+shell sessions after updating this layer. These settings also work with image
+targets. The `imx-boot-all` target continues to enumerate its own DDR/capacity
+matrix; use `IMX_BOOT_ALL_*` settings to restrict that matrix.
+
+Use fallback assignments (`?=`) in `conf/local.conf` when command-line values
+should take precedence, for example:
+
+```bitbake
+DRAM_CONF ?= "D8"
+DDR_TYPE ?= "lpddr5"
+IMXBOOT_VARIANT ?= "mx95cpl"
+```
+
+A hard assignment using `=` in configuration metadata overrides an imported
+environment value. LPDDR4X supports D4 and D8; D16 is supported with LPDDR5.
+
 ## Pre-build customization (optional)
 * Set a correct dram configuration values:<br>
   * DRAM size:<br>
@@ -30,9 +62,9 @@
 
     |DRAM Configuration|``conf/local.conf`` string|
     |:---|:---|
-    |D4| DRAM_CONF = "D4"|
-    |D8| DRAM_CONF = "D8"|
-    |D16| DRAM_CONF = "D16"|
+    |D4| DRAM_CONF ?= "D4"|
+    |D8| DRAM_CONF ?= "D8"|
+    |D16| DRAM_CONF ?= "D16"|
 
   * DRAM type:<br>
     The supported DRAM types: **lpddr5** and **lpddr4x**.
@@ -42,8 +74,8 @@
 
     |DRAM Type|``conf/local.conf`` string|
     |:---|:---|
-    |lpddr4x| DDR_TYPE = "lpddr4x"|
-    |lpddr5| DDR_TYPE = "lpddr5"|
+    |lpddr4x| DDR_TYPE ?= "lpddr4x"|
+    |lpddr5| DDR_TYPE ?= "lpddr5"|
 
 * Set a correct imx soc revision:<br>
 The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
@@ -82,7 +114,7 @@ The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
   |IMXBOOT_VARIANT|"rpmsg"|SM configuration ``mx95cplrpmsg`` is in use|
   In order to change the default IMXBOOT_VARIANT add this line to the ``conf/local.conf``:
   ```
-  IMXBOOT_VARIANT = "rpmsg"
+  IMXBOOT_VARIANT ?= "rpmsg"
   ```
   Deatlis about SM and M7 can be found [here](https://github.com/compulab-yokneam/Documentation/blob/master/man/imx95-m7.md).
 

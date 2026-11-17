@@ -6,6 +6,11 @@ EULA=1
 T="../sources/meta-bsp-imx95/templates"
 M="../sources/meta-bsp-imx95/tools/${MACHINE}"
 
+# Allow per-command hardware settings, just like OE's MACHINE passthrough.
+# oe-buildenv-internal merges and deduplicates this list during setup below.
+BB_ENV_PASSTHROUGH_ADDITIONS="${BB_ENV_PASSTHROUGH_ADDITIONS:-} IMXBOOT_VARIANT DDR_TYPE DRAM_CONF"
+export BB_ENV_PASSTHROUGH_ADDITIONS
+
 BD=$(cat <<< $@ | awk '$0=$NF')
 
 function fix_fsl_imx_base() {

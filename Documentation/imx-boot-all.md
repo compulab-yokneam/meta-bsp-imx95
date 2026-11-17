@@ -84,7 +84,28 @@ normal U-Boot/OEI source trees, and default image boot links are not replaced.
 
 ## Select the System Manager Variant
 
-Set one of these values in the build directory's `conf/local.conf`:
+To build the `mx95cplrpmsg` bootloader matrix for UCM-iMX95 using a command-line
+selection, initialize or re-enter the environment from the BSP checkout root:
+
+```bash
+source compulab-setup-env build-ucm-imx95
+MACHINE=ucm-imx95 IMXBOOT_VARIANT=mx95cplrpmsg bitbake imx-boot-all
+```
+
+The setup helper enables environment passthrough for `IMXBOOT_VARIANT`.
+The selection applies only to this command, which builds the full configured
+revision/DDR/capacity matrix and deploys it under:
+
+```text
+tmp/deploy/images/ucm-imx95/imx-boot-all/mx95cplrpmsg/
+```
+
+For command-line selection, leave `IMXBOOT_VARIANT` unset in `conf/local.conf`
+or use `?=` for an overridable default. A hard assignment using `=` in
+configuration metadata takes precedence over the environment value.
+
+Alternatively, set one of these values in the build directory's
+`conf/local.conf` for a fixed selection:
 
 ```bitbake
 IMXBOOT_VARIANT = "mx95cpl"

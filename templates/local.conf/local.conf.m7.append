@@ -5,4 +5,4 @@
 
 # Select the mx95cplrpmsg System Manager configuration (default: mx95cpl).
 # Use the matching board's RPMsg Linux device tree.
-# IMXBOOT_VARIANT = "mx95cplrpmsg"
+# IMXBOOT_VARIANT ?= "mx95cplrpmsg"
