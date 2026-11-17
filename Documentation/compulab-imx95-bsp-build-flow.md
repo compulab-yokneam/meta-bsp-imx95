@@ -161,8 +161,7 @@ For example, an LPDDR4X variant uses:
 DDR_TYPE = "lpddr4x"
 ```
 
-The current machine configuration reads `DDR_TYPE`; the `DRAM_TYPE` spelling
-in the README's DRAM-type table does not match this implementation.
+The machine configuration and the README's DRAM-type table use `DDR_TYPE`.
 
 The UCM machine also selects the Summit NX61x firmware package, wireless driver
 autoload settings, and the board's device trees and overlays.

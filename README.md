@@ -42,8 +42,8 @@
 
     |DRAM Type|``conf/local.conf`` string|
     |:---|:---|
-    |lpddr4x| DRAM_TYPE = "lpddr4x"|
-    |lpddr5| DRAM_TYPE = "lpddr5"|
+    |lpddr4x| DDR_TYPE = "lpddr4x"|
+    |lpddr5| DDR_TYPE = "lpddr5"|
 
 * Set a correct imx soc revision:<br>
 The current relase supports three SOC revisions: **A0**, **A1** and **B0**.
