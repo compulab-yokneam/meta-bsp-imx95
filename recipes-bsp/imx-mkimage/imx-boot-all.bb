@@ -124,7 +124,7 @@ boot_matrix_uboot() {
     done
     "${S}/scripts/config" --file "$ub/.config" --enable "DRAM_$dram"
     "${S}/scripts/config" --file "$ub/.config" \
-        --set-str LOCALVERSION "-compulab-${CL_RELEASE}-$dram"
+        --set-str LOCALVERSION "-${CL_RELEASE}-$dram"
     oe_runmake -C "${S}" O="$ub" CROSS_COMPILE=${TARGET_PREFIX} \
         HOSTCC="${BUILD_CC} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}" olddefconfig
     grep -qx "CONFIG_DRAM_$dram=y" "$ub/.config" || \

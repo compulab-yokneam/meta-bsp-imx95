@@ -12,9 +12,8 @@ require u-boot-compulab/imx95.inc
 
 DEPENDS += "flex-native bison-native bc-native dtc-native gnutls-native"
 
-inherit fsl-u-boot-localversion
-
-LOCALVERSION = "-compulab-${CL_RELEASE}"
+LOCALVERSION = "-${CL_RELEASE}-${DRAM_CONF}"
+EXTRA_OEMAKE += 'LOCALVERSION="${LOCALVERSION}"'
 
 BOOT_TOOLS = "imx-boot-tools"
 
